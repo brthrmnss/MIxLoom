@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"   creationComplete="onInit(event)"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300" xmlns:views="views.*">
+	<fx:Script>
+		<![CDATA[
+			import Reloaders.ReloadableView2;
+			
+			import mx.events.FlexEvent;
+			public var r  : ReloadableView2 
+			protected function onInit(event:FlexEvent):void
+			{  
+				if ( r == null ) 
+				{
+					r = new ReloadableView2()
+					ReloadableView2.add( this )
+				}
+				this.btn5.addEventListener(MouseEvent.CLICK, this.onClick6 ) ; 
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{ 
+				// TODO Auto-generated method stub
+				var p : Object  = TestView.prototype; 
+				trace('tdd.........new listener')
+				var o : Object = flash.utils.getDefinitionByName( flash.utils.getQualifiedClassName( this ) )
+				o.prototype.bo = function () : void
+				{
+					//this.dispatchEvent(
+					trace('bo') 
+				}
+				this['bo']();  
+				
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace('111111111111111111111'); 
+			}
+			
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace('3333')
+			}
+			public function recieveEvents(event: Event, str : String ) : void
+			{
+				this[str](event); 
+			}
+			
+			static public function go2(event:Event):void
+			{
+				trace('boom'); 
+				//this.recieveEvents( event, 'markco' ); 
+			}
+			
+			protected function button5_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace('on...'); 
+			}
+			protected function onClickIt(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace('osfdn...'); 
+			}			
+			
+			protected function onClick6(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace('6'); 
+			}
+			
+			public function ___TestView_Button1_clickxxx(event:MouseEvent) : void
+			{
+				//this.button1_clickHandler(event);
+				event.currentTarget.parentDocument.button1_clickHandler(event);
+				return;
+			}// end function
+			
+			
+			protected function onClickIt2(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				trace('click it 2'); 
+			}
+			
+		]]> 
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:VGroup height="100%">
+		<s:Button label="ddd" click="button1_clickHandler(event)" height="20" />
+		<s:TextInput id="txtInputB"  width="50"/>
+		<s:Button label="oldddd d2" click="button2_clickHandler(event)" height="20" />
+		<s:Button label="eeeeeee" click="button2_clickHandler(event)" height="20" />
+		<s:Button label="eeeeeee" click="button2_clickHandler(event)" height="20" />
+		<s:Button  id="btn5" label="Test X" fontSize="15" click="onClickIt(event)" height="20" />
+		<s:Button id="btn6" label="Test X" fontSize="15" click="onClickIt(event)" height="20" />
+		<s:Button id="btn7" label="Test XsB" fontSize="15" click="onClickIt2(event)" height="20" />
+		<!--<views:TestViewB />-->
+	</s:VGroup>
+	
+</s:Group>

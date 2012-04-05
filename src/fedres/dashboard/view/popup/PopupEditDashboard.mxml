@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popup:PopupBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:comps="org.syncon.comps.*" 
+					  creationComplete="onInit()" 
+					  implements="org.syncon.popups.view.IPopup"
+					  xmlns:popup="fedres.dashboard.view.popup.*" xmlns:utils="fedres.dashboard.view.utils.*" xmlns:view="fedres.dashboard.view.*"					  
+					  >
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			
+			import org.syncon.popups.view.IPopup;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			import sss.Shelpers.Shelpers.ui.PopupCode;
+			
+			public var completeFx : Function; 
+			
+			static public var EDIT_SERIES : String = 'editSeries'
+			static public var ADD_SERIES : String = 'addSeries'
+			static public var DELETE_SERIES : String = 'deleteSeries'				
+			static public var CHANGED_BOARD_NAME : String = 'changedBoardName'; 
+			static public var SAVE : String = 'save'				
+			static public var CANCEL : String = 'cancel'; 		
+			
+			override public function onInit() : void 
+			{
+				this.creationComplete = true; 
+				this.popupCode.center()
+			}
+			
+			override public  function create(app:Object)  : IPopup
+			{
+				var popup: PopupEditDashboard = new PopupEditDashboard()
+				popup.popupCode = PopupCode.Create( popup, app ) 
+				return popup			
+			} 
+			
+			override public function show(  )  : void
+			{
+				this.popupCode.open( false,true ) 
+				this.dispatchEvent( new CustomEvent( 'openedPopup' ) ); 
+			}
+ 
+			public var indicator : IndicatorVO; 
+			
+ 			public function open( indicator_: IndicatorVO, completeFx : Function = null )  : void
+			{
+				this.popupCode.open( false, true ) 
+				this.indicator = indicator_; 
+			}  
+			
+			 /**
+			 * Export move data from ui to data object
+			 * */
+			
+			override public function hide( ) : void
+			{
+				this.popupCode.close() 
+			}
+
+			protected function btnClose_clickHandler(event:MouseEvent):void
+			{
+				this.btnCancel_clickHandler(event)
+				//this.hide()
+			}
+
+
+			protected function btnAdd_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( PopupEditDashboard.ADD_SERIES
+					) ) 
+			}
+
+
+			protected function txtBoardName_changeHandler(event:TextOperationEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( CHANGED_BOARD_NAME , this.txtBoardName.text) ) 
+			}
+
+
+			protected function btnSave_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( SAVE ) ) 
+			}
+			protected function btnCancel_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( CANCEL ) ) 
+			}			
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	<popup:PopupBg />
+	
+ 	<s:VGroup paddingTop="10" paddingBottom="20" paddingRight="10" paddingLeft="10" >
+	 
+<!--
+	 <popup:PopupHeader    label="Historical Data"  id="header" padding="0"  width="100%"/>
+	 -->
+	 <!--<s:Label text="Customize Dashboard  " fontSize="24" fontWeight="bold" />-->
+		<popup:PopupHeader    label="Customize Dashboard"  id="header" padding="0"  width="100%"/>
+	 <s:Label text="Market Indicator" visible="false" />
+	  
+	 <mx:Form labelWidth="100" >
+		 <mx:FormItem label="Name" >
+			 <s:TextInput id="txtName"  width="300" />
+		 </mx:FormItem>
+		 <mx:FormItem label="Name of Board" >
+			 <s:TextInput id="txtBoardName" change="txtBoardName_changeHandler(event)"    width="300" />
+		 </mx:FormItem>
+		 <mx:FormItem label="Description" >
+			 <s:TextArea  heightInLines="4" width="300" id="txtDesc" />
+		 </mx:FormItem>		 
+	 </mx:Form>
+	  
+	 <s:Label text="Selected Series"  fontWeight="bold"/>
+		<utils:HDividerLine width="100%" />
+	<!-- <s:Label  text="options" />-->
+	 
+	 <s:Button label="Add" id="btnAdd" 
+			   useHandCursor="true" buttonMode="true"
+			    toolTip="Add more series"
+			   
+			   click="btnAdd_clickHandler(event)" />
+		<mx:Spacer height="6" />
+	 <s:List id="list" itemRenderer="fedres.dashboard.view.popup.series_renderer"  
+			 width="100%" borderVisible="false"   
+			 height="300" >
+		 <s:layout>
+			 <s:VerticalLayout gap="10"         />
+		 </s:layout> 
+		 
+	 </s:List>
+	 
+		
+		<s:HGroup width="100%" horizontalAlign="right">
+			<s:Button label="Save"   id="btnSave" 
+					  useHandCursor="true" buttonMode="true"
+					  toolTip="Keep Changes"
+					   click="btnSave_clickHandler(event)"
+					  />
+			<s:Button label="Close"   id="btnClose" 
+					  useHandCursor="true" buttonMode="true"
+					  toolTip="Revert Changes"
+					   click="btnClose_clickHandler(event)"
+					  />
+		</s:HGroup>
+ </s:VGroup>  
+ 
+		<utils:IconButton  label="X"  iconSkin=".closeBtn" click="btnClose_clickHandler(event)" 
+						   right="5" top="10" />
+ 
+</popup:PopupBase>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"   width="100%"
+		 creationComplete="group1_creationCompleteHandler(event)"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"  >
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.model.vo.IndicatorVO;
+			
+			import mx.collections.ArrayList;
+			import mx.events.FlexEvent;
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				var arr : Array = []; 
+				for ( var i : int = 0 ; i < 10; i++ )
+				{
+					var ind :   IndicatorVO = new IndicatorVO()
+					ind.setup( 'Corporate debt', 'OAS', 0.51, 6.07, 1.75, null , 0.52,2.2)					
+					arr.push( ind ) 
+				}
+				this.list.dataProvider = new ArrayList( arr ) 
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	
+	
+	
+	<s:List id="list" itemRenderer="fedres.dashboard.view.dash_renderer"  
+			 width="100%" borderVisible="false"  
+			
+			  >
+		 <s:layout>
+			<s:VerticalLayout gap="20"     paddingBottom="20"     />
+		</s:layout> 
+		
+		<s:scroller>
+			<s:Scroller horizontalScrollPolicy="off" verticalScrollPolicy="off" />
+		</s:scroller>
+	</s:List>
+</s:Group>

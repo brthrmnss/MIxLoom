@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		   width="100%"
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  creationComplete="onInit()" xmlns:utils="fedres.dashboard.view.utils.*"  
+					  >
+
+	<fx:Script>
+		<![CDATA[
+			private var _lbl : String = '' ;
+			public function onInit() : void 
+			{
+				this.lblText.text = _lbl
+				this.padding = _padding
+			}
+			public function set label (lbl:String):void
+			{
+				if ( this.lblText != null ) 
+					this.lblText.text = lbl
+				_lbl = lbl
+			}
+			public function get label() : String
+			{
+				return this._lbl; 
+			}
+			//[Bindable] public var padding : int  = 10;
+			private var _padding : int  = 10;
+			public function set padding (_padding_: int):void
+			{
+				if ( this.lblText != null ) 
+				{
+					this.lblText.x = _padding_
+					this.linex.width =  this.width - _padding_*2						
+				}
+				_padding = _padding_
+				
+			}			
+		]]>
+	</fx:Script>
+
+	<s:Label id="lblText"   text="Popup Name" fontSize="24" fontWeight="bold"/>
+	<utils:HDividerLine width="100%"  id="linex"  />
+	<!-- <s:Line id="linex"  width="100%"  horizontalCenter="0" bottom="0">
+		 <s:stroke>
+			 <s:SolidColorStroke color="#3DCCD9" />
+		 </s:stroke>		
+	 </s:Line>	 	
+	 	 
+	-->
+</s:VGroup>

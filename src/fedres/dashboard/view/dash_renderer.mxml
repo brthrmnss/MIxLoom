@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"  color="#777777" 
+		 creationComplete="creationCompleteHandler(event)" 
+		 autoDrawBackground="false" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%"
+		 minHeight="60" xmlns:utils="fedres.dashboard.view.utils.*" xmlns:view="fedres.dashboard.view.*">
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			static public var ROLLOVER_UI :  String = 'rolloverUI'; 
+			static public var ROLLOUT_UI : String = 'rolloutUI';
+			static public var CLICK_HISTORICAL_DATA : String = 'historicalData';			
+		 
+			public var creationComplete : Boolean = false; 
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				this.creationComplete = true; 
+				this.modifyRenderer()
+					
+/* 				var i : IndicatorVO = new IndicatorVO()
+				i.setup( 'Corporate debt', 'OAS', 0.51, 6.07, 1.75, null , 0.52,2.2)
+				this.data = i  */
+			}
+			
+			
+			[Bindable] public var indicator  : IndicatorVO = new IndicatorVO()
+			override public function set data(value:Object):void { 
+				if ( this.indicator != null ) 
+				{
+					this.indicator.removeEventListener(   IndicatorVO.INDICATOR_UPDATED, this.modifyRenderer )
+				}
+				super.data = value; 
+				if (value== null)  return; 
+				
+				
+					
+				
+				this.indicator = value as IndicatorVO
+				this.indicator.addEventListener( IndicatorVO.INDICATOR_UPDATED, this.modifyRenderer, false, 0, true ) 
+				/* 
+				if ( dateXML != null ) 
+				this.dateXML.removeEventListener(ProjectVO.PROJECT_UPDATED, this.modifyRenderer )
+				this.dateXML = value as DateXMLVO
+				this.dateXML.addEventListener(ProjectVO.PROJECT_UPDATED, this.modifyRenderer, false, 0, true ) 		
+				*/
+				this.modifyRenderer() 
+			}
+						
+			
+			private function modifyRenderer(e: Event=null) : void
+			{
+				if ( this.creationComplete == false  ) 
+					return; 
+				//txtLbl.text =  this.district.number.toString() + '. ' + this.district.name 
+				//this.txtPreview.text = this.district.text; 
+				if ( e != null ) 
+				{
+					trace ( 'updated renderer '  + this.indicator.series_id  )
+				}
+				this.txtLeftScale.text = this.indicator.lo.toString(); 
+				this.txtRightScale.text = this.indicator.hi.toString(); 				
+				this.txtName.text = this.indicator.name.toString(); 
+				this.txtConst.text =   '('+ this.indicator.series_id.toString() + ')'
+				if ( this.indicator.series_id == '' ) 
+					this.txtConst.text = ''; 
+				
+				this.txtValue.text = this.indicator.currentValue.toString(); 
+				this.arrowNo.x = this.scaleBg.width * ( this.indicator.currentValue-this.indicator.lo)/(this.indicator.hi - this.indicator.lo )
+				this.arrowNo.x -= this.arrowNo.width/2
+				this.typicalRange.x = this.scaleBg.width * ( this.indicator.typicalLo-this.indicator.lo)/(this.indicator.range )
+				this.typicalRange.width =  (this.scaleBg.width * 
+					( this.indicator.typicalHi-this.indicator.lo)/(this.indicator.range ))
+					- this.typicalRange.x;		
+				
+				this.arrowLeft.visible = false 
+				this.arrowRight.visible = false; 
+				if ( this.indicator.threeMonthTrendPositive ) 
+				{
+					this.arrowRight.visible = true
+				}
+				else
+				{
+					this.arrowLeft.visible = true
+				}
+				 this.moreInfo.data = this.indicator
+				this.graph.data = this.indicator; 
+			} 		
+			
+
+			protected function linkHistorical_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( CLICK_HISTORICAL_DATA, this.indicator ) ) ; 
+			}
+
+
+			protected function onRollover(ui : UIComponent, event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( ROLLOVER_UI, ui) ) 
+			}
+
+
+			protected function onRollout(ui : UIComponent, event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent(ROLLOUT_UI, ui) ) 
+			}
+			private var showingMoreInfo : Boolean = true; 
+			protected function btnMore_clickHandler( event:MouseEvent):void
+			{
+				this.showingMoreInfo =  ! this.showingMoreInfo 
+				if ( this.showingMoreInfo ) 
+				{
+					this.moreInfo.currentState = '' 
+				}
+				else
+				{
+					this.moreInfo.currentState = 'hide'
+				} 
+			}
+			
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:SolidColorStroke id = "s1" color="0x5CB0EE" weight="2"/>
+	</fx:Declarations>
+	
+	
+	
+	
+	<s:states> 
+		<s:State name="normal"/> 
+		<s:State name="hovered"/> 
+		<s:State name="disabled"/> 
+		<s:State name="selected" />
+	</s:states> 	
+	
+	
+	
+	<view:MoreInformationPane x="{this.holderScale.x}" 
+							   y="90"
+							  width="{this.holderScale.width}" id="moreInfo" />
+	
+	
+	<s:HGroup verticalAlign="middle" gap="30"
+			  paddingTop="20" clipAndEnableScrolling="false">
+		
+		
+		
+		<s:VGroup id="holderTitle" width="160"  gap="2">
+			<s:HGroup >
+				<s:Label id="txtName"  fontSize="14" text="Corporate debt "  
+						 maxWidth="{this.holderTitle.width}"
+						 useHandCursor="true" buttonMode="true"
+						 rollOver="onRollover(txtName, event)"
+						 rollOut="onRollout(txtName, event)"
+						 />
+				<!--<s:Label id="txtConst" text="(OAS)"  color="0xC2C3C5"/>-->
+				<!--<utils:IconButton  iconSkin=".iconInfo"  height="16" />-->
+			</s:HGroup>
+			<s:Label id="txtConst" text="(OAS)"  color="0xC2C3C5"/>
+			<s:Label id="linkHistorical" text="HISTORICAL DATA"  
+					  click="linkHistorical_clickHandler(event)"
+					  color="0x5EA9ED" fontSize="10" useHandCursor="true" buttonMode="true"
+					 textDecoration="underline" />
+			<s:Label id="btnMore" text="more"  
+					 click="btnMore_clickHandler(event)"
+					 color="0x979797" fontSize="10" useHandCursor="true" buttonMode="true"
+					 textDecoration="underline" />			
+		</s:VGroup>
+		
+		
+		
+		<!-- Outside holder for range scale -->
+		<s:Group clipAndEnableScrolling="false" width="{this.width-120-160
+				 	-100-60}" height="50" id="holderScale"
+				  >
+			<s:Group y="10"  width="{holderScale.width}" height="100%" >
+				
+			
+			<s:Group id="scaleBg"  width="{holderScale.width}" height="22">
+				
+				<s:Rect id="shadow" left="0" right="0" top="0" bottom="0" >
+					<s:fill>
+						<s:LinearGradient rotation="90">
+							<s:GradientEntry color="0xE9EDEE"  />
+							<s:GradientEntry color="0xF8F8FA"  />
+						</s:LinearGradient>
+					</s:fill>
+					<s:stroke>
+						<s:SolidColorStroke color="#CCCDCF" />
+					</s:stroke>
+				</s:Rect>
+				<s:filters>
+					<s:GlowFilter color="0xE9EDEE" />
+					<!--<s:DropShadowFilter  alpha="0.5" blurX="0" 
+										 blurY="0" distance="1" strength="1"   />-->
+				</s:filters>				
+			</s:Group>
+			
+			<!-- the group and rectangle that contains the scale --> 
+			<s:Group id="typicalRange"  width="100" height="26" y="-3"
+					 useHandCursor="true" buttonMode="true"
+					 rollOver="onRollover(typicalRange, event)"
+					 rollOut="onRollout(typicalRange, event)"
+					 >
+				<s:filters>
+					<!--<s:GlowFilter color="0x95B99B" />-->
+					<s:DropShadowFilter  alpha="0.5" blurX="0" 
+										blurY="0" distance="1" strength="1"   />
+					
+				</s:filters>
+				<s:Rect id="scaleColor" left="0" right="0" top="0" bottom="0" >
+					<!--
+					<s:fill>
+						<s:LinearGradient rotation="90">
+							<s:GradientEntry color="0x7ECCFC"  alpha="1"  />
+							<s:GradientEntry color="0x3D94E1"   ratio="1"  />
+						</s:LinearGradient>
+					</s:fill>
+					-->
+					<s:fill>
+						<s:LinearGradient rotation="90">
+							<s:GradientEntry color="0x748575"  alpha="1"  />
+							<s:GradientEntry color="0x95B99B"   ratio="1"  />
+						</s:LinearGradient>
+					</s:fill>
+					
+					
+				</s:Rect>
+				<s:Label text="Typical Range" color="0xFFFFFF"  
+						  verticalCenter="1"
+						 horizontalCenter="0" textAlign="center"/>
+			</s:Group>			
+			
+			<s:Group id="arrowNo"  y="-15" width="40" height="39" 
+					 useHandCursor="true" buttonMode="true" 
+					 rollOver="onRollover(arrowNo, event)"
+					 rollOut="onRollout(arrowNo, event)"
+					 >
+			<!--	<s:Rect id="bgArrow" left="0" right="0" top="0" bottom="0" >
+					<s:fill>
+						<s:LinearGradient rotation="90">
+							<s:GradientEntry color="0xF9C301"  alpha="1" />
+							<s:GradientEntry color="0xDB6400"  alpha="1" />
+						</s:LinearGradient>
+					</s:fill>
+					<s:stroke>
+						<s:SolidColorStroke color="#FFFFFF"  weight="2" />
+					</s:stroke>
+				</s:Rect>-->
+				<s:filters>
+					<s:GlowFilter color="0xF9C301" />
+					<s:DropShadowFilter id="dsfBg" alpha="0.5" blurX="0" 
+										blurY="0" distance="1" strength="1"   />
+				
+				</s:filters>
+				
+				
+				<s:Path id="arrowLeft"   y="-15"
+						data="M 0 5 L 5 0 L 5 10 z M 5 4 L 40 4 L 40 6 L 5 6 z">
+					<s:fill>
+						<s:SolidColor color="0xDB6400" />
+					</s:fill>
+				</s:Path>			
+				
+				
+				<s:Path id="arrowRight"   y="-15"
+						data="M 40 5 L 35 0 L 35 10 z M 35 4 L 0 4 L 0 6 L 35 6 z">
+					<s:fill>
+						<s:SolidColor color="0xDB6400" />
+					</s:fill>
+				</s:Path>			
+				
+				
+				<s:Path id="bgArrows"  
+						 data="L 0 20 L 10 20 L 20 30 L 30 20 L 40 20 L 40 0 L 0 0 z">
+					<s:fill>
+						<s:LinearGradient rotation="90">
+							<s:GradientEntry color="0xF9C301"  alpha="1" />
+							<s:GradientEntry color="0xDB6400"  alpha="1" />
+						</s:LinearGradient>
+					</s:fill>
+					<s:stroke>
+						<s:SolidColorStroke color="#FFFFFF"  weight="2" />
+					</s:stroke>
+				</s:Path>			
+				
+				
+				<s:Label id="txtValue" color="0xFFFFFF"  text="1.75"  textAlign="center"
+						 y="5" horizontalCenter="0" fontWeight="bold" />
+			</s:Group>				
+			
+			
+			<s:Label id="txtLeftScale" bottom="0"  color="0x979797" text="0.45"
+					 useHandCursor="true" buttonMode="true"
+					 rollOver="onRollover(txtLeftScale, event)"
+					 rollOut="onRollout(txtLeftScale, event)"
+					 />
+			<s:Label id="txtRightScale"  bottom="0"  right="0" color="0x979797"  text="10.3"
+					 useHandCursor="true" buttonMode="true"
+					 rollOver="onRollover(txtRightScale, event)"
+					 rollOut="onRollout(txtRightScale, event)"
+					 />
+				
+			</s:Group>
+		</s:Group>
+		
+		<view:Graph12MonthTrendMini  id="graph" />
+		<!--
+		<s:Label text="Poor"  fontSize="18"  width="150"  fontWeight="bold"/>
+		-->
+		
+	</s:HGroup>
+	
+</s:ItemRenderer>

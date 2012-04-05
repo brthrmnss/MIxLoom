@@ -1,0 +1,741 @@
+package org.mixingloom.patcher
+{
+	import Reloaders.ReloadableView;
+	import Reloaders.ReloadableView2;
+	
+	import flash.events.Event;
+	import flash.events.IOErrorEvent;
+	import flash.system.ApplicationDomain;
+	import flash.utils.ByteArray;
+	import flash.utils.Dictionary;
+	
+	import org.as3commons.bytecode.abc.AbcFile;
+	import org.as3commons.bytecode.abc.ClassInfo;
+	import org.as3commons.bytecode.abc.InstanceInfo;
+	import org.as3commons.bytecode.abc.LNamespace;
+	import org.as3commons.bytecode.abc.MethodBody;
+	import org.as3commons.bytecode.abc.MethodInfo;
+	import org.as3commons.bytecode.abc.MethodTrait;
+	import org.as3commons.bytecode.abc.Op;
+	import org.as3commons.bytecode.abc.QualifiedName;
+	import org.as3commons.bytecode.abc.SlotOrConstantTrait;
+	import org.as3commons.bytecode.abc.TraitInfo;
+	import org.as3commons.bytecode.abc.enum.MultinameKind;
+	import org.as3commons.bytecode.abc.enum.NamespaceKind;
+	import org.as3commons.bytecode.abc.enum.Opcode;
+	import org.as3commons.bytecode.abc.enum.TraitKind;
+	import org.as3commons.bytecode.emit.IAbcBuilder;
+	import org.as3commons.bytecode.emit.impl.AbcBuilder;
+	import org.as3commons.bytecode.emit.impl.MethodBuilder;
+	import org.as3commons.bytecode.io.AbcDeserializer;
+	import org.as3commons.bytecode.io.AbcSerializer;
+	import org.as3commons.bytecode.swf.SWFWeaverFileIO;
+	import org.as3commons.bytecode.tags.DoABCTag;
+	import org.as3commons.bytecode.tags.serialization.DoABCSerializer;
+	import org.as3commons.bytecode.typeinfo.Argument;
+	import org.mixingloom.SwfTag;
+	
+	
+	/**
+	 * Gave up on the bytecode tilli learn how to add an anoyouse function ....
+	 * 
+	 * */
+	public class MigrateUtilsPrototypes extends AbstractPatcher {
+		
+		static public var dictClass : Dictionary = new Dictionary(true); 
+		/**
+		 * will store last loaded class here the version 
+		 * */
+		static public var dictClassVersions : Dictionary = new Dictionary(true)
+		/**
+		 * need to know name of loaded swfs or something 
+		 * */
+		static public var Count : int = 0 ;
+		/**
+		 * version of class name with dots
+		 * */
+		private var classNameDot:String;
+		
+		public var className:String;
+		/**
+		 * when loading a 2nd dary version
+		 * store original name here
+		 * ...unnecsary are you are loading to a diff context ....
+		 * */
+		public var originalClassName: String = ''
+		public var propertyOrMethodName:String;
+		private var abcFile:AbcFile;
+		private var funcs:Array;
+		
+		public function MigrateUtilsPrototypes()
+		{
+		}
+		
+		/**
+		 * Takes swf tag and remove it for collisions 
+		 * */
+		public function makeClass(swfTag: SwfTag, fx : Function , swfTags:Vector.<SwfTag>):void
+		{
+			this.fxCallback = fx; 
+			swfTag.tagBody.position = 4;
+			
+			var abcStartLocation:uint = 4;
+			while (swfTag.tagBody.readByte() != 0)
+			{
+				abcStartLocation++;
+			}
+			abcStartLocation++; // skip the string byte terminator
+			
+			var startOfConstPoolPosition:uint = abcStartLocation + 4;
+			
+			swfTag.tagBody.position = 0;
+			
+			var abcDeserializer:AbcDeserializer = new AbcDeserializer(swfTag.tagBody);
+			this.abcFile = abcDeserializer.deserialize(abcStartLocation)
+			
+			var info : ClassInfo = abcFile.classInfo[0] as ClassInfo;
+			//get name and package 
+			var name : String = info.classMultiname.name
+			var package_ : String = info.classMultiname.fullName.replace( '.'+info.classMultiname.name, '' ) 
+			this.className = package_+'.'+name; 
+			//get version 
+			var version : int = dictClassVersions[this.className];
+			version++;
+			dictClassVersions[this.className] = version
+			this.version = version; 
+			if ( version ==1 )
+			{
+				
+			}
+			else
+			{
+				this.originalClassName = this.className; 
+				//rename
+				name+='V'+version.toString()
+				info.classMultiname.name =name
+				this.className = package_+'.'+name; 
+			}
+			
+			//get all functions 
+			this.funcs = this.getAllFunctions(); 
+			this.convertFuncsToVars( funcs ) 
+			
+			//reload 
+			var abcBuilder:IAbcBuilder = new AbcBuilder();
+			
+			abcBuilder.addEventListener(Event.COMPLETE, loadedHandler);
+			abcBuilder.addEventListener(IOErrorEvent.IO_ERROR, errorHandler);
+			abcBuilder.addEventListener(IOErrorEvent.VERIFY_ERROR, errorHandler);
+			
+			//var appDomain : ApplicationDomain;
+			this.appDomain ;//= ApplicationDomain.currentDomain; 
+			if ( version > 1) 
+			{
+				//this.appDomain = new ApplicationDomain();
+			}
+			if ( this.mode_ReloadInstant ) 
+			{
+				abcBuilder['reload']( abcFile, appDomain );
+			}
+			else
+			{
+				abcBuilder.build(null )
+				var doabcTag : DoABCTag = new DoABCTag()
+				var swfTag2 : SwfTag = new SwfTag()
+				swfTag2
+				doabcTag.flags = 0
+				doabcTag.abcFile = this.abcFile; 
+				//doabcTag.name = swfTag.name
+				//doabcTag.byteCodeName= "as3commonsByteCodeGeneratedClasses"
+				//swfTags.splice( swfTags.indexOf( swfTag ) , 1, doabcTag ) ; 
+				//doabcTag.
+				/*
+				var abcSerializer :AbcSerializer = new AbcSerializer()
+				var swfw : SWFWeaverFileIO = new SWFWeaverFileIO()
+				
+				var doI : DoABCSerializer = new DoABCSerializer( swfw.createTagSerializer( DoABCTag.TAG_ID ) ); 
+				swfTag.tagBody = abcSerializer.serializeAbcFile(abcFile)
+				//swfTag.tagBody = 
+				doI.write(  abcSerializer.serializeAbcFile(abcFile), swfTag ) ; */
+				var swfw : SWFWeaverFileIO = new SWFWeaverFileIO()
+				var doI : DoABCSerializer =   DoABCSerializer( swfw.createTagSerializer( DoABCTag.TAG_ID ) ); 
+				var output : ByteArray = new ByteArray()
+				
+				doI.write(  output, doabcTag ) 
+				//output = doI.serializer.serializeAbcFile( this.abcFile ); 
+				//swfTag.
+				swfTag.tagBody = output; 
+				
+				swfTag.tagBody.position = 0; 
+				//redo
+				
+				abcStartLocation = 4;
+				while (swfTag.tagBody.readByte() != 0)
+				{
+					abcStartLocation++;
+				}
+				abcStartLocation++; // skip the string byte terminator
+				
+				
+				swfTag.tagBody.position = 0;
+				
+				abcDeserializer = new AbcDeserializer(swfTag.tagBody);
+				this.abcFile = abcDeserializer.deserialize(abcStartLocation)
+				//////
+				
+				
+				this.fxCallback() //hopefully ican load modified classes all at once ...
+				
+			}
+			return;
+			abcBuilder.buildAndLoad();
+			//abcBuilder.buildAndExport()
+			//var x2 : AbcFile = abcBuilder.build(null); 
+			return; 
+		}
+		
+		/**
+		 * make var 
+		 * make function 
+		 * clear local scope 
+		 * set var to function in constructor
+		 * */
+		private function convertFuncsToVars(funcs:Array):void
+		{
+			this.initBlocking()
+			var inst : InstanceInfo = abcFile.instanceInfo[0] as InstanceInfo
+ 			inst.isSealed = false //is this how u make non dynamic?
+			var traits : Array = inst.traits.concat()
+			var traits2 : Array = [] 
+			for each ( var trait : TraitInfo in  inst.traits  ) 
+			{
+				//continue;
+				if (  trait.traitKind.description == TraitKind.METHOD.description  ) 
+				{
+					var mT : MethodTrait = trait as MethodTrait
+					if ( mT.isStatic || mT.isGetter || mT.isSetter  ) 
+					{
+						//traits2.push( trait ) 
+						continue; 
+					}
+					var index : int = traits.indexOf(   trait  )
+					//traits.splice( index, 1 )  
+					if ( trait.isOverride && trait.traitMultiname.name == 'initialize' ) 
+					{
+						trace('skip');
+						continue; 
+					}
+					trait.traitMultiname.name  = this.convertFxNameToRenamed(   trait.traitMultiname.name );
+				}
+				else
+				{
+					trace(trait.traitMultiname.fullName , trait.traitKind.description ) ;  
+					//traits2.push( trait ) 
+				}
+			}
+			inst.traits = traits; 
+			trace('covop5')
+			var count : int = 0; 
+			for each ( var fxName : String in funcs ) 
+			{
+				trace('debug',fxName,  inst.methodInfo.length, inst.methodTraits.length, abcFile.methodBodies.length, abcFile.methodInfo.length ) 
+				count++
+				/*continue;
+				if ( count < 2 ) 
+				continue; */
+				/*if ( count > 2 )
+				continue;*/ 
+				var fxNameOriginal : String = fxName; 
+				if ( fxName == this.constructorName  ) 
+				{
+					//don[t understand this ...
+					fxName = 'fauxConstructor'
+				}
+				var fxVarName : String = this.convertFxNameToProp( fxName ) ; 
+				
+				//create new variable (Function) to hold function for retrieval
+				//isn't this redundant ... what does the above slotting loop do?
+				var slot : SlotOrConstantTrait = new SlotOrConstantTrait()
+				slot.typeMultiname = new QualifiedName('Function', LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+				slot.traitMultiname = new QualifiedName(fxVarName, LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+				slot.traitKind = TraitKind.SLOT
+				//2-5-12: on prototype ... trait will block 
+				//2-5-12: correction: slot is ok, it ads the fxSlot on the instances .... still probably not needed
+				//didn't you rename the fx slot? 
+				//inst.addTrait( slot );  //make on prototype only...
+				
+				var dbg : Array = [inst.slotOrConstantTraits]
+				inst.slotOrConstantTraits.length
+				
+				//clone target method 
+				var cloneFx : MethodInfo = this.getMethodByName(fxNameOriginal)
+				
+				var m : MethodInfo = new MethodInfo();// cloneFx.clone(); 
+				m.flags = cloneFx.flags; 
+				m.methodName = 'methAdd'+count.toString()
+				m.methodBody = cloneFx.methodBody.clone() as MethodBody;
+				m.methodBody.maxScopeDepth = cloneFx.methodBody.maxScopeDepth
+				m.methodBody.maxStack  = cloneFx.methodBody.maxStack
+				m.methodBody.localCount  = cloneFx.methodBody.localCount
+				m.methodBody.initScopeDepth  = cloneFx.methodBody.initScopeDepth
+				m.methodBody.traits = [] ; 
+				
+				m.methodBody.backPatches = cloneFx.methodBody.backPatches ; 
+				m.methodBody.exceptionInfos = cloneFx.methodBody.exceptionInfos; 
+				cloneFx.methodBody.opcodeBaseLocations = null
+				m.as3commonsBytecodeName = new QualifiedName('', LNamespace.PUBLIC,MultinameKind.QNAME ) 
+				//m.methodBody = new MethodBody();
+				//m.methodBody.opcodes = [] ; 
+				
+				for each ( var arg : Argument in cloneFx.formalParameters )
+				{
+					m.addArgument( arg ) ; 
+				}
+				for each ( arg in cloneFx.optionalParameters )
+				{
+					m.addArgument( arg ) ; 
+				}
+				//cloneFx.paramCount
+				m.scopeName = cloneFx.scopeName; 
+				m.returnType = cloneFx.returnType;
+				
+				m.methodBody.opcodes = cloneFx.methodBody.opcodes.concat()
+				//clear method/ function
+				//m.methodBody.opcodes = []
+				//m.methodBody.opcodes.push( new Op(Opcode.returnvoid) )
+				
+				//cloneFx.methodBody.opcodes.splice(2,2 )
+				m.as3commonsByteCodeAssignedMethodTrait == null
+				
+				if ( cloneFx.as3commonsBytecodeName != 'constructor'  ) 
+				{
+					//rename old method 
+					cloneFx.methodName = this.convertFxNameToRenamed(cloneFx.methodName); 
+					cloneFx.methodBody.traits[0]
+				}	
+				else
+				{
+					m.methodName = 	 this.convertFxNameToRenamed( 'fauxConstructor.' )
+					m.methodBody.opcodes
+					this.removeOpCode( m.methodBody.opcodes,  Opcode.constructsuper ) 
+				}
+				/*	
+				//put in public namespace //2/5/11...not necessary
+				cloneFx.as3commonsBytecodeName = new QualifiedName(cloneFx.methodName, LNamespace.PUBLIC,MultinameKind.QNAME ) 
+				if ( cloneFx.as3commonsByteCodeAssignedMethodTrait != null ) 
+				{
+				mT =  cloneFx.as3commonsByteCodeAssignedMethodTrait as MethodTrait; 
+				mT.traitMultiname = new QualifiedName(cloneFx.methodName, LNamespace.PUBLIC,MultinameKind.QNAME ) 
+				}	
+				*/
+				//clear all actions
+				//cloneFx.methodBody.opcodes = []
+				//cloneFx.methodBody.opcodes.push( new Op(Opcode.returnvoid) )
+				
+				//they use method body to go through here
+				//continue;
+				m.methodBody.methodSignature = m; 
+				abcFile.addMethodBody( m.methodBody ); 
+				abcFile.addMethodInfo( m ); //must add info (which is where count comes from)
+				//add to constructor
+				var constructor : MethodInfo = this.getConstructor( )
+				//continue; 
+				/*
+				var m2 : MethodBuilder = new MethodBuilder()
+				var bb : QualifiedName = new QualifiedName(fxVarName, LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+				m2.addOpcode( Opcode.getlocal_0 )
+				.addOpcode( Opcode.newfunction,[abcFile.methodBodies.length-1] ) //-1 does nto work ? 2 ,3 is good
+				.addOpcode( Opcode.pop ) 
+				.addOpcode( Opcode.setproperty, [bb] ) 
+				
+				constructor.methodBody.opcodes.splice( constructor.methodBody.opcodes.length -2, 
+				0, m2.opcodes[0], m2.opcodes[1] ,m2.opcodes[3] ) 
+				*/
+				//continue
+				var m2 : MethodBuilder = new MethodBuilder()
+				var fxOnPrototypeName : QualifiedName = new QualifiedName(fxVarName, LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+				fxOnPrototypeName = new QualifiedName(fxName, LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+				var ooo : Object = this.abcFile.constantPool.namespacePool 
+				var ns : LNamespace = this.abcFile.constantPool.namespacePool[2]; 
+				ns = new LNamespace(NamespaceKind.PACKAGE_NAMESPACE, ""); 
+				//	var qnPrototype : QualifiedName = new QualifiedName('prototypeXd', x,MultinameKind.QNAME ) ; 
+				//var x : Multiname = new Multiname( 'prototype', m, MultinameKind.MULTINAME )
+				//var ii : int = this.abcFile.constantPool.getMultinamePosition(x)
+				var qnPrototype : QualifiedName = new QualifiedName('prototype', LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+				var ii : int = this.abcFile.constantPool.getMultinamePositionByName( 'prototype' ) 
+				//qnPrototype = this.abcFile.constantPool.multinamePool[ii]
+				//	if ( qnPrototype == null ) 
+				qnPrototype = new QualifiedName('prototype', LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+				m2.addOpcode( Opcode.getlocal_0 )
+					.addOpcode( Opcode.findpropstrict, [qnPrototype] )
+					.addOpcode( Opcode.getproperty, [qnPrototype] )
+					.addOpcode( Opcode.newfunction,[abcFile.methodBodies.length-1] ) //-1 does nto work ? 2 ,3 is good
+					.addOpcode( Opcode.pop ) 
+					.addOpcode( Opcode.setproperty, [fxOnPrototypeName] ) 
+				
+				constructor.methodBody.opcodes.splice( constructor.methodBody.opcodes.length -2, 
+					0, m2.opcodes[1], m2.opcodes[2], m2.opcodes[3] ,
+					/*m2.opcodes[1], m2.opcodes[2],*/ m2.opcodes[5] )				
+				
+				
+			}
+			
+		}
+		
+		private function removeOpCode(opcodes:Array, removeCode:Opcode):void
+		{
+			// TODO Auto Generated method stub
+			for each ( var op : Op in opcodes ) 
+			{
+				if ( op.opcode.opcodeName == removeCode.opcodeName ) 
+				{
+					opcodes.splice( opcodes.indexOf( op ) ,  1 ) ; 
+				}
+				return; 
+			}
+		}
+		
+		private function initBlocking():void
+		{
+			//return;
+			var constructor : MethodInfo = this.getConstructor( )
+			var m2 : MethodBuilder = new MethodBuilder()
+			var ooo : Object = this.abcFile.constantPool.namespacePool 
+			var ns : LNamespace = this.abcFile.constantPool.namespacePool[2]; 
+			ns = new LNamespace(NamespaceKind.PACKAGE_NAMESPACE, ""); 
+			//	var qnPrototype : QualifiedName = new QualifiedName('prototypeXd', x,MultinameKind.QNAME ) ; 
+			//var x : Multiname = new Multiname( 'prototype', m, MultinameKind.MULTINAME )
+			//var ii : int = this.abcFile.constantPool.getMultinamePosition(x)
+			var qnPrototype : QualifiedName = new QualifiedName('prototype', LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+			var initedProp : QualifiedName = new QualifiedName('inited', LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+			var ii : int = this.abcFile.constantPool.getMultinamePositionByName( 'prototype' ) 
+			qnPrototype = this.abcFile.constantPool.multinamePool[ii]
+			//	if ( qnPrototype == null ) 
+			qnPrototype = new QualifiedName('prototype', LNamespace.PUBLIC,MultinameKind.QNAME ) ; 
+			m2.addOpcode( Opcode.findpropstrict, [qnPrototype] )
+				.addOpcode( Opcode.getproperty, [qnPrototype] )
+				.addOpcode( Opcode.getproperty, [initedProp] )			
+				.addOpcode( Opcode.pushtrue  )		
+				.addOpcode( Opcode.ifne, [1] )	
+				.addOpcode( Opcode.returnvoid  )		
+				.addOpcode( Opcode.findpropstrict, [qnPrototype] )
+				.addOpcode( Opcode.getproperty, [qnPrototype] )
+				.addOpcode( Opcode.pushtrue  )		
+				.addOpcode( Opcode.setproperty, [initedProp] ) 
+			var count : int =  0 ; 
+			for each ( var op : Op in m2.opcodes )
+			{
+				/*constructor.methodBody.opcodes.splice( 
+				constructor.methodBody.opcodes.length -2, 0, op )
+				*/	
+				//constructor.methodBody.opcodes.splice( count , 0, op )
+				constructor.methodBody.opcodes.splice( 
+					constructor.methodBody.opcodes.length -2, 0, op )
+				count++
+			}
+			/*
+			constructor.methodBody.opcodes.splice( constructor.methodBody.opcodes.length -2, 
+			0, m2.opcodes[1], m2.opcodes[2], m2.opcodes[3] ,m2.opcodes[5] )	
+			*/
+		}
+		
+		private function getAllFunctions():Array
+		{
+			var output : Array = [] ; 
+			for each ( var o : MethodInfo in this.abcFile.methodInfo ) 
+			{
+				if ( o.as3commonsBytecodeName == 'constructor'  )
+				{ if ( this.extendsSparks() == false )
+				{
+					continue;
+				}
+				else
+				{
+					//output.push(  'constructor' )
+					//continue
+					constructorName = o.methodName;
+				}
+				}
+				if ( o.methodName == '' ) 
+					continue; 				
+				//if ( debugFunctionNames ) 
+				//	trace( o.methodName ) ;
+				/*if ( o.methodBody.traits.length > 0 )
+				{
+				for each ( var t : SlotOrConstantTrait in o.methodBody.traits ) 
+				{
+				if ( t.isStatic ) 
+				continue; 
+				trace();
+				}
+				}*/
+				mTrait = null; 
+				if ( o.as3commonsByteCodeAssignedMethodTrait != null ) 
+				{
+					var mTrait : MethodTrait = o.as3commonsByteCodeAssignedMethodTrait as MethodTrait; 
+					if (mTrait.isSetter || mTrait.isGetter || mTrait.isStatic )
+						continue; 
+				}
+				if ( mTrait != null ) 
+				{
+					//((this.abcFile.instanceInfo[0] as  InstanceInfo).superclassMultiname as QualifiedName).fullName.indexOf('spark')
+					if (mTrait.isOverride && o.methodName == 'initialize'  )
+						continue; 
+				}
+				if ( debugFunctionNames ) 
+					trace( o.methodName ) ;
+				output.push( o.methodName ); 
+			}
+			return output;
+		}
+		
+		
+		
+		public function errorHandler(event:Event):void 
+		{
+			trace('errorHandler')
+		}
+		
+		public function loadedHandler(event:Event):void 
+		{
+			//var className : String = 'blah.Foo2'
+			//var clazz:Class = ApplicationDomain.currentDomain.getDefinition(className) as Class;
+			if ( this.appDomain != null ) 
+				var clazz:Class = this.appDomain.getDefinition(className) as Class;
+			else
+				clazz = ApplicationDomain.currentDomain.getDefinition(className) as Class;
+			
+			if ( this.version == 1 ) 
+			{
+				this.copyFunctions( clazz ); 
+			}
+			else
+			{
+				//should send in the old prototype ... 
+				var existingClazz:Class = ApplicationDomain.currentDomain.getDefinition(this.originalClassName) as Class;
+				var curentD : ApplicationDomain = ApplicationDomain.currentDomain; 
+				this.copyFunctions2( existingClazz, clazz ); 
+			}
+			
+			this.fxCallback(); 
+			return;//if ur loading more than 2 file do not attempt to do this twice
+			if ( this.className != 'blah.Foo' ) 
+				return; 
+			
+			var instance:Object = new clazz();
+			var o : Object = new Object(); 
+			Object.prototype.jjk = instance.ggg; 
+			Object.prototype.jjk2 = instance.fx; 
+			
+			
+			var outputXML : Object = ImportClassUtils.getClassInfo( clazz ) 
+			//var funcs : Array = this.dictFuncs[this.className]
+			
+			trace(Object.prototype.jjk); 
+			
+			var fooTest : Object = instance //as Foo; 
+			fooTest.getBar() ;
+			fooTest.getBar2();
+			//test
+			/*import blah.Foo
+			var fooTest : Foo = instance as Foo; 
+			fooTest.getBar() ;
+			fooTest.getBar2(); */
+			//end test
+			instance.fx()
+			o.jjk2()
+			instance.ggg()
+			o.jjk()
+			//var i:int = instance.multiplyByHundred(10);
+			//this.invokeCallBack(); 
+			// i == 1000
+		}
+		
+		private function copyFunctions(clazz : Object):void
+		{
+			var instance:Object = new clazz(); //make default paramets nullable ... to avoid problems 
+			if ( this.className == 'blah.Foo' ) 
+			{
+				try
+				{
+					instance.fxStore__getPrivateBar();
+				} 
+				catch(error:Error) 
+				{
+					trace('no') 
+				}
+				try
+				{
+					instance.getPrivateBar()
+				} 
+				catch(error:Error) 
+				{
+					trace('no') 
+				}
+				
+			}
+			for each ( var func : String in this.funcs ) 
+			{
+				//do i have to make fxs here? i don't think so ... 
+				var fxName : String = this.convertFxNameToProp(func);
+				if ( this.fxOnPrototypes == false ) 
+					clazz.prototype[func] = clazz.prototype[fxName];
+				/*
+				clazz.prototype[func+'1'] = clazz.prototype[fxName];
+				clazz.prototype[func]  =  function (...args):Object
+				{
+				trace('test');
+				var fx : Function = this[func+'1']
+				//fx.apply(
+				return this[func+'1'].apply(this, args)
+				} 
+				*/
+				//clazz.prototype[func] = instance[fxName]
+				//delete clazz.prototype[fxName]
+			}
+			if ( this.className == 'blah.Foo' ) 
+			{
+				try
+				{
+					instance.fxStore__getPrivateBar();
+				} 
+				catch(error:Error) 
+				{
+					trace('no') 
+				}
+				try
+				{
+					instance.getPrivateBar()
+				} 
+				catch(error:Error) 
+				{
+					trace('no') 
+				}
+				
+			}
+			return;
+		}
+		private function copyFunctions2(existingClazz:Class, clazz:Class):void
+		{
+			var instance:Object = new clazz(); //make default paramets nullable ... to avoid problems 
+			/*if ( this.isTestClass  ) 
+			trace( 'test' ,instance.getPrivateBar() )*/
+			for each ( var func : String in this.funcs ) 
+			{
+				//do i have to make fxs here? i don't think so ... 
+				/*var fxName : String = this.convertFxNameToProp(func)
+				existingClazz.prototype[func] = instance[fxName]
+				*/
+				//existingClazz.prototype[func]		= null
+				//	delete existingClazz.prototype[func]		
+				//var fxName : String = this.convertFxNameToProp(func);
+				if ( func == this.constructorName ) 
+					func = 'fauxConstructor' 
+				existingClazz.prototype[func] = clazz.prototype[func];
+				/*var privateName : String = this.convertFxNameToRenamed(func);
+				existingClazz.prototype[privateName] = clazz.prototype[fxName];				
+				//clazz.prototype[func] = instance[fxName]
+				existingClazz.prototype[func+1] = clazz.prototype[fxName];
+				existingClazz.prototype[func] =  function (...args):Object
+				{
+				trace('test');
+				return null;
+				//return this[func+'1'].apply(this, args)
+				}*/
+				//clazz.prototype[func] = clazz.prototype[fxName];
+			}
+			
+			if ( this.extendsSparks() ) 
+			{
+				ReloadableView2.check(this.originalClassName)
+			}
+			
+			if ( this.isTestClass  )
+			{
+				/*privateName = convertFxNameToProp('getPrivateBar')
+				var fx : Function =  clazz.prototype[privateName];
+				existingClazz.prototype['boo1'] = clazz.prototype[privateName];
+				existingClazz.prototype['boo1'] = function () : String
+				{
+				trace(this)
+				trace('boo 1');
+				return 'boo1 ok'
+				}*/
+				try {
+					trace( 'test' ,instance.getPrivateBar() )
+					var instance2:Object = new existingClazz()
+					trace( 'test' ,instance2.getPrivateBar() )
+					//existingClazz.prototype[func] = clazz.prototype[fxName]; 
+					trace( 'test again' ,instance2.getPrivateBar() )
+				}
+				catch ( e : Error ) 
+				{
+					
+				}
+				//trace( 'test boo1' ,instance2['boo1']() )
+				//fx();
+				return;
+			} 
+		}
+		
+		private function extendsSparks():Boolean
+		{
+			var inst : InstanceInfo = this.abcFile.instanceInfo[0] as InstanceInfo
+			if ( inst.superclassMultiname != null ) 
+			{
+				var superClassQN :  QualifiedName =  inst.superclassMultiname as QualifiedName; 
+				if ( superClassQN.fullName.indexOf('spark.comp') == 0 ) 
+				{
+					return true
+				}
+			}
+			return false;
+		}
+		
+		public var propStoreFx_Preamble : String = 'fxStore__'
+		public var propRenameFx_Preamble : String = 'fxInject__' 
+		private var version:int;
+		private var appDomain:ApplicationDomain;
+		private var fxCallback:Function;
+		private var debugFunctionNames:Boolean=true;
+		private var mode_ReloadInstant:Boolean;
+		private var constructorName:String;
+		private var fxOnPrototypes:Boolean=true;
+		public function convertFxNameToProp(s : String ) : String
+		{
+			return propStoreFx_Preamble+s
+		}
+		
+		private function convertFxNameToRenamed(methodName:String):String
+		{
+			return propRenameFx_Preamble+methodName;
+		}
+		private function get  isTestClass( ):Boolean
+		{
+			if ( this.className == 'blah.Foo' || this.originalClassName == 'blah.Foo' ) 
+				return true
+			return false; 
+		}
+		private function getConstructor( ):MethodInfo
+		{
+			for each ( var o : MethodInfo in this.abcFile.methodInfo ) 
+			{
+				if ( o.as3commonsBytecodeName == 'constructor' ) 
+					return o; 
+			}
+			return null;
+		}		
+		
+		private function getMethodByName(fxName:String):MethodInfo
+		{
+			for each ( var o : MethodInfo in this.abcFile.methodInfo ) 
+			{
+				if ( o.methodName == fxName ) 
+					return o; 
+			}
+			return null;
+		}		
+		
+		
+	}
+}

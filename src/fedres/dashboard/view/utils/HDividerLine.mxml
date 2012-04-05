@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		  width="100%"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 >
+	<fx:Script>
+		<![CDATA[
+		]]>
+	</fx:Script>
+	
+	<s:Line width="100%"  >
+		<s:stroke>
+			<s:SolidColorStroke id="strokeColor3" color="#666666" />
+		</s:stroke>
+	</s:Line>
+	<s:Line width="100%" y="1" >
+		<s:stroke>
+			<s:SolidColorStroke id="strokeColor" color="0xCACECF" />
+		</s:stroke>
+	</s:Line> 
+
+	
+</s:Group>

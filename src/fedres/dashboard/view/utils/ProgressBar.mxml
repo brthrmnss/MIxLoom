@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"  
+		  useHandCursor="true" buttonMode="true"
+		   width="32" height="32"
+		 creationComplete="onInit()" xmlns:view="org.syncon.evernote.panic.view.*" xmlns:utils="org.syncon.evernote.panic.view.utils.*"
+		 >
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.core.UIComponent;
+			
+			import org.syncon.evernote.basic.model.CustomEvent;
+			import org.syncon.evernote.panic.view.assets.Icons;
+			import org.syncon.evernote.panic.vo.WidgetVO;
+			
+			public var creationComplete : Boolean = false; 
+			public var imgMode : Boolean = false; 
+			protected function onInit():void
+			{
+				//this.init();
+				this.creationComplete = true
+	  	
+			}
+ 
+			
+		 
+
+			public function set value ( s :  Number )  : void
+			{
+				if ( isNaN( s) ) 
+					this.visible = false; 
+				else
+					this.visible = true; 
+				//this.bar.width = (this.width-4)*s/100
+				this.fxResize.widthTo =  (this.width-4)*s/100
+				this.fxResize.play([this.bar, topB, topBx])
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:Resize id="fxResize" duration="1100"  target="{this.bar}"/>
+	</fx:Declarations>
+	
+	<!-- layer 1: border -->
+	<s:Rect left="0" right="0" top="0" bottom="0" width="199"
+			radiusX="3" radiusY="3" 
+			>
+		<s:stroke>
+			<s:LinearGradientStroke rotation="90">
+				<s:GradientEntry color="0xFFFFFF" alpha="0.12" />
+				<s:GradientEntry color="0xFFFFFF" alpha="0.8" />
+			</s:LinearGradientStroke>
+		</s:stroke>
+	</s:Rect>
+	
+	<!-- layer 2: inner border -->
+	<s:Rect left="1" right="1" top="1" bottom="1" 
+			radiusX="3" radiusY="3" >
+		<s:stroke>
+			<s:SolidColorStroke color="0x636363" alpha="1" />
+		</s:stroke>
+	</s:Rect>
+	<!--
+	<s:Rect    id="maskBg" x="2" top="2" bottom="2" 
+			   radiusX="3" radiusY="3" >
+		<s:fill>
+			<s:SolidColor color="#97CD20" />
+		</s:fill>
+	</s:Rect>
+	-->
+	<!-- layer 3: fill -->
+	<s:Rect    id="bar" x="2" top="2" bottom="2" 
+			   radiusX="3" radiusY="3" >
+<!--		<s:fill>
+			<s:BitmapFill source="@Embed('assets/pattern_143.gif')" fillMode="repeat" />
+		</s:fill>-->
+		<s:fill>
+			<s:SolidColor color="#97CD20" />
+		</s:fill>
+	</s:Rect>
+	
+
+	
+	<s:Rect x="2" top="2" bottom="2"  alpha="0.4"
+			radiusX="3" radiusY="3" id="topB">
+		<!--<s:filters>
+			<s:DropShadowFilter id="dsfBg" alpha="0.5" blurX="0" 
+								blurY="0" distance="1" strength="1"   />
+		</s:filters>-->
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry id="ge1" color="#c0c0c0"  ratio="0"/>
+				<s:GradientEntry id="ge2" color="#939393"  ratio="0.5"/>
+				<s:GradientEntry id="ge3" color="#7e7e7e"  ratio="0.5"/>
+				<s:GradientEntry id="ge4" color="#6a6a6a"   ratio="1"/>
+			</s:LinearGradient>
+		</s:fill>
+<!--		<s:stroke>
+			<s:SolidColorStroke color="#ffffff" caps="none" weight="1" joints="miter" miterLimit="4"/>
+		</s:stroke>-->
+	</s:Rect>
+
+	
+	<s:Rect   top="2" bottom="2"  alpha="0.4"
+			x="2"  
+			radiusX="3" radiusY="3" id="topBx">
+		<s:fill>
+			<s:LinearGradient rotation="0">
+				<s:GradientEntry color="#00F542"  ratio="0"/>
+				<s:GradientEntry color="#00F542"   ratio="1" alpha="0"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+
+	
+	
+	<!-- layer 4: inner shadow -->
+	<s:Rect left="2" top="2" bottom="2" width="1"
+			radiusX="3" radiusY="3" >
+		<s:fill>
+			<s:SolidColor color="0x000000" alpha="0.12" />
+		</s:fill>
+	</s:Rect>
+	<s:Rect right="2" top="2" bottom="2" width="1" 
+			radiusX="3" radiusY="3" >
+		<s:fill>
+			<s:SolidColor color="0x000000" alpha="0.12" />
+		</s:fill>
+	</s:Rect>
+	<s:Rect left="3" top="2" right="3" height="1" 
+			radiusX="3" radiusY="3" >
+		<s:fill>
+			<s:SolidColor color="0x000000" alpha="0.12" />
+		</s:fill>
+	</s:Rect>
+	
+
+
+</s:Group>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"  color="#777777" 
+		 creationComplete="creationCompleteHandler(event)" 
+		 autoDrawBackground="false" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="60" xmlns:utils="fedres.dashboard.view.utils.*">
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			
+			import mx.charts.HitData;
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			
+			static public var ROLLOVER_UI :  String = 'rolloverUI'; 
+			static public var ROLLOUT_UI : String = 'rolloutUI';
+			static public var CLICK_HISTORICAL_DATA : String = 'historicalData';			
+			
+			[Bindable]
+			private var chartDp: ArrayCollection = new ArrayCollection( [
+				{ date: "Jan", value: 2000, Expenses: 1500, Amount: 450 },
+				{ date: "Feb", value: 1000, Expenses: 200, Amount: 600 },
+				{ date: "Mar", value: 1500, Expenses: 500, Amount: 300 },
+				{ date: "Apr", value: 1800, Expenses: 1200, Amount: 900 },
+				{ date: "May", value: 2400, Expenses: 575, Amount: 500 } ]);
+			
+			public var creationComplete : Boolean = false; 
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				this.creationComplete = true; 
+				this.modifyRenderer()
+	 
+			}
+			
+			
+			[Bindable] public var indicator  : IndicatorVO = new IndicatorVO()
+			override public function set data(value:Object):void { 
+				super.data = value; 
+				if (value== null)  return; 
+				
+				this.indicator = value as IndicatorVO
+	 
+				this.modifyRenderer() 
+			}
+						
+			public function modifyRenderer ()  : void
+			{
+		 
+				 
+				this.chartDp.disableAutoUpdate();
+				this.chartDp.removeAll()
+				for each ( var o : ObservationVO in this.indicator.lastYears ) 
+				{
+					chartDp.addItem( o )
+				}
+				this.chartDp.enableAutoUpdate()
+			} 		
+			 
+			public function createDataTip(hd: HitData):String {
+				return this.dateFormat.format( hd.item.date )  + ': '+ hd.item.value
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:SolidColorStroke id = "s1" color="0x5CB0EE" weight="2"/>
+		<mx:DateFormatter id="dateFormat" formatString="MM/YY" />
+	</fx:Declarations>
+	
+	<s:states> 
+		<s:State name="normal"/> 
+		<s:State name="hovered"/> 
+		<s:State name="disabled"/> 
+		<s:State name="selected" />
+	</s:states> 	
+	
+	
+	
+	<!-- paddingLeft="5" paddingRight="5"  -->
+	<mx:LineChart id="myChart4" width="100"  height="50" 
+				    dataTipFunction="createDataTip" 
+				  seriesFilters="{[]}"
+				  dataTipRenderer="fedres.dashboard.view.CustomDataTipSkin"
+				  showDataTips="true" dataProvider="{chartDp}">
+		<mx:backgroundElements>
+			<mx:GridLines 
+				horizontalChangeCount="1" 
+				verticalChangeCount="1"
+				>
+				<mx:horizontalStroke>
+					<s:SolidColorStroke color="0xFFFFFF" alpha="0.0"  weight="1"/>
+				</mx:horizontalStroke>
+				<mx:verticalStroke>
+					<mx:SolidColorStroke weight="1"/>
+				</mx:verticalStroke>
+			</mx:GridLines>
+		</mx:backgroundElements>
+		
+		<mx:horizontalAxis>
+			<mx:CategoryAxis  id="a11s"    categoryField="date"/>
+		</mx:horizontalAxis>
+		<mx:horizontalAxisRenderers>
+			<mx:AxisRenderer   canDropLabels="true" labelGap="10"
+							   axis="{a11s}" tickLength="0"    fontSize="16"
+							   showLabels="false" showLine="false"  >
+				<mx:axisStroke>
+					<mx:SolidColorStroke color="#FFFFFF" 
+										 weight="1" 
+										 alpha=".75"
+										 />
+				</mx:axisStroke>
+			</mx:AxisRenderer>
+			
+		</mx:horizontalAxisRenderers>		 
+		<mx:verticalAxis>
+			<mx:LinearAxis  id="a11"    padding="5" baseAtZero="false"    />
+		</mx:verticalAxis>				
+		
+		<mx:verticalAxisRenderers>
+			<mx:AxisRenderer   labelGap="10"
+							   canDropLabels="true"    fontSize="14"
+							   axis="{a11}" tickLength="0"   
+							   showLabels="false"
+							   showLine="false"
+							   />
+		</mx:verticalAxisRenderers>
+		<mx:series>
+			<mx:LineSeries yField="value" form="segment" displayName="Value" lineStroke="{s1}"/>
+		</mx:series>
+	</mx:LineChart>
+	
+</s:ItemRenderer>

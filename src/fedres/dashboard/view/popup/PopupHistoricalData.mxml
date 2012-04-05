@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popup:PopupBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:comps="org.syncon.comps.*" 
+					  creationComplete="onInit()" 
+					  implements="org.syncon.popups.view.IPopup"
+					  xmlns:popup="fedres.dashboard.view.popup.*" xmlns:utils="fedres.dashboard.view.utils.*" xmlns:view="fedres.dashboard.view.*"					  
+					  >
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			
+			import org.syncon.popups.view.IPopup;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			import sss.Shelpers.Shelpers.ui.PopupCode;
+			
+			public var completeFx : Function; 
+			
+			[Bindable]
+			private var expensesAC:  ArrayCollection = new ArrayCollection( [] )
+				/* 
+				{ date: "Jan", value: 2000, Expenses: 1500, Amount: 450 },
+				{ date: "Feb", value: 1000, Expenses: 200, Amount: 600 },
+				{ date: "Mar", value: 1500, Expenses: 500, Amount: 300 },
+				{ date: "Apr", value: 1800, Expenses: 1200, Amount: 900 },
+				{ date: "May", value: 2400, Expenses: 575, Amount: 500 } ]);
+				 */		
+			
+			override public function onInit() : void 
+			{
+				this.creationComplete = true; 
+				this.popupCode.center()
+			}
+			
+			override public  function create(app:Object)  : IPopup
+			{
+				var popup:    PopupHistoricalData = new PopupHistoricalData()
+				popup.popupCode = PopupCode.Create( popup, app ) 
+				return popup			
+			} 
+			
+			override public function show(  )  : void
+			{
+				this.popupCode.open( false,true ) 
+				
+			}
+ 
+			public var indicator : IndicatorVO; 
+			
+ 			public function open( indicator_: IndicatorVO, completeFx : Function = null )  : void
+			{
+				this.popupCode.open( false, true ) 
+				this.indicator = indicator_; 
+				this.lastYear.data = this.indicator
+				//this.header.label = this.indicator.name; 
+				this.expensesAC.disableAutoUpdate();
+				this.expensesAC.removeAll()
+				for each ( var o :  ObservationVO in this.indicator.allDataPoints ) 
+				{
+					expensesAC.addItem( o )
+				}
+				this.expensesAC.enableAutoUpdate()		
+					
+					
+				this.dispatchEvent( new CustomEvent( 'openedPopup' ) ); 
+			}  
+			
+			 /**
+			 * Export move data from ui to data object
+			 * */
+			
+			override public function hide( ) : void
+			{
+				this.popupCode.close() 
+			}
+
+			protected function btnClose_clickHandler(event:MouseEvent):void
+			{
+				this.hide()
+			}
+ 
+			
+			private function formatDate(value:Date,previousValue:Date,axis:DateTimeAxis):String {               
+				var dateLabel:String = df.format(value);
+				return dateLabel;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<mx:SolidColorStroke id = "s1" color="0x5CB0EE" weight="2"/>
+		
+		<mx:DateFormatter id="df" formatString="'YY"/>
+
+	</fx:Declarations>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@namespace comps "org.syncon.comps.*";
+		@namespace popup "fedres.dashboard.view.popup.*";
+		@namespace utils "fedres.dashboard.view.utils.*";
+		
+		.txtQuestion 
+		{
+			fontSize: 16;
+			fontWeight: bold;
+		}
+		.txtAnswer
+		{
+			paddingLeft: 10px;
+		}		
+	</fx:Style>
+	
+	<popup:PopupBg />
+	
+ <s:VGroup paddingTop="10" paddingBottom="20" paddingRight="10" paddingLeft="10" >
+	 
+<!--
+	 <popup:PopupHeader    label="Historical Data"  id="header" padding="0"  width="100%"/>
+	 -->
+	 <s:Label  id="txtName" 
+			    width="495"
+			   text="Name of Thing" fontSize="24" fontWeight="bold" />
+	 <s:Label text="Market Indicator" visible="false" />
+	 <s:HGroup gap="20">
+	 	<s:VGroup>
+			 <s:Label  id="txtValues" 
+					    fontWeight="bold"
+					   text="MONTHLY VALUES (%): JUNE '89 – SEPTEMBER '10"   />
+			 <s:HGroup>
+				 <s:Label text="Current" />
+				 <s:Label text="90% of Historical Values fall within this range" />
+			 </s:HGroup>
+			 <mx:LineChart id="myChart4" width="465"  height="305" 
+						   
+						   seriesFilters="{[]}"
+						   showDataTips="true" dataProvider="{expensesAC}">
+				 <mx:backgroundElements>
+					 <mx:GridLines 
+						 horizontalChangeCount="1" 
+						 
+						 >
+						 <mx:horizontalStroke>
+							 <s:SolidColorStroke color="0xd2d2d2" alpha="1"  weight="1"/>
+						 </mx:horizontalStroke>
+						 <mx:verticalStroke>
+							 <mx:SolidColorStroke weight="1"/>
+						 </mx:verticalStroke>
+					 </mx:GridLines>
+				 </mx:backgroundElements>
+				 
+				 <mx:horizontalAxis>
+					 <mx:DateTimeAxis  id="a11s"    labelFunction="{formatDate}"   />
+					<!-- <mx:CategoryAxis  id="a11s"    categoryField="date"/>-->
+				 </mx:horizontalAxis>
+				<!--
+				 <mx:horizontalAxisRenderers>
+					 <mx:AxisRenderer   canDropLabels="true" labelGap="10"
+										axis="{a11s}" tickLength="0"  
+										showLabels="true" showLine="true"  >
+						 <mx:axisStroke>
+							 <mx:SolidColorStroke color="#FFFFFF" 
+												  weight="1" 
+												  alpha=".75"
+												  />
+						 </mx:axisStroke>
+					 </mx:AxisRenderer>
+					 
+				 </mx:horizontalAxisRenderers>	
+				 -->
+				 <mx:verticalAxis>
+					 <mx:LinearAxis  id="a11"    padding="5" baseAtZero="false"    />
+				 </mx:verticalAxis>				
+				 
+				 <mx:verticalAxisRenderers>
+					 <mx:AxisRenderer   labelGap="10"
+										canDropLabels="true"    fontSize="14"
+										axis="{a11}" tickLength="5"   
+										showLabels="true"
+										showLine="true"   
+									>
+						<mx:axisStroke>
+							<s:SolidColorStroke color="#BBCCDD" 
+												weight="1" 
+												alpha=".75"
+												caps="square"
+												/>
+						</mx:axisStroke>
+		
+		
+					 </mx:AxisRenderer>
+				 </mx:verticalAxisRenderers>
+				 <mx:series>
+					 <mx:LineSeries yField="value" xField="date" form="segment" displayName="Value" lineStroke="{s1}"/>
+				 </mx:series>
+			 </mx:LineChart>
+				 
+			</s:VGroup>
+		 	<s:Line height="325" >
+				<s:stroke>
+					<s:SolidColorStroke color="0xd2d2d2" alpha="1"  weight="1"/>
+				</s:stroke>
+			</s:Line>
+		 	<s:VGroup>
+				<s:Label text="12 MONTH TREND"  fontWeight="bold"/>
+				<view:Graph12MonthTrend id="lastYear" />
+			</s:VGroup>
+		 </s:HGroup>	
+	 
+	 
+	 <s:VGroup width="480">
+		 <s:Label  text="What is it?"  styleName="txtQuestion"/>
+		 <s:Label   id="txtWhatIsIt" width="100%"
+			text="An OAS (Option-Adjusted Spread) is a measurement tool for evaluating yield differences between similar-maturity fixed-income products with different embedded options." styleName="txtAnswer"/>
+		 <s:Label  text="Why is it important?"  styleName="txtQuestion"/>
+		 <s:Label   id="txtWhyImp" width="100%"
+			text="The OAS on investment grade corporate debt is viewed as a gauge of credit spreads." styleName="txtAnswer"/>
+		 <s:Label  text="How do we interpret it?"  styleName="txtQuestion"/>
+		 <s:Label   id="txtHowInterp" styleName="txtAnswer" width="100%"
+					text="    * A higher OAS implies greater anticipated default risk and therefore a higher risk premium." 	
+					/>
+		 <s:Label  text="Typical historical range"  styleName="txtQuestion"/>
+		 <s:Label   id="txtHistorical" styleName="txtAnswer" width="100%"
+					text="As of December 2010, 90% of month-end OAS values ranged from 0.51% to 2.06%." 	
+					/>
+
+	 </s:VGroup>
+ </s:VGroup>  
+ 
+		<utils:IconButton  label="X"  iconSkin=".closeBtn" click="btnClose_clickHandler(event)" 
+						   right="5" top="10" />
+ 
+</popup:PopupBase>

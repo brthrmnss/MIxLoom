@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx"  
+				fontSize="12"   width="200"  
+				creationComplete="itemrenderer1_creationCompleteHandler(event)"
+				autoDrawBackground="false" 
+				xmlns:view="org.syncon.evernote.panic.view.*" 
+				xmlns:utils="fedres.biegebook.view.utils.*">
+	
+	<fx:Script> 
+		<![CDATA[ 
+			import fedres.biegebook.controller.CustomEvent;
+			import fedres.biegebook.model.vo.DateXMLVO;
+			
+			import mx.collections.ArrayList;
+			import mx.events.FlexEvent;
+			
+			[Bindable] public var dateXML :   DateXMLVO = new DateXMLVO()
+			override public function set data(value:Object):void { 
+				super.data = value; 
+				if (value== null)  return; 
+				
+				
+				this.dateXML = value as DateXMLVO
+/* 
+				if ( dateXML != null ) 
+					this.dateXML.removeEventListener(ProjectVO.PROJECT_UPDATED, this.modifyRenderer )
+					this.dateXML = value as DateXMLVO
+				this.dateXML.addEventListener(ProjectVO.PROJECT_UPDATED, this.modifyRenderer, false, 0, true ) 		
+				 */
+				this.modifyRenderer() 
+			}
+			
+			private function modifyRenderer(e:CustomEvent=null) : void
+			{
+				if ( this.creationComplete == false  ) 
+					return; 
+				//this.pic.source = this.dateXML.img; 
+				txtLbl.text = this.dateXML.dateString.toString().toUpperCase(); 
+				//this.txtDsc.text = this.dateXML.desc.toString().toUpperCase()
+			} 
+			
+			public var creationComplete : Boolean = false; 
+			protected function itemrenderer1_creationCompleteHandler(event:FlexEvent):void
+			{
+				this.creationComplete = true; 
+				this.modifyRenderer()
+			}
+
+			protected function btnEdit_clickHandler(event:MouseEvent):void
+			{
+			 /* 	this.dispatchEvent( new CustomEvent(ProjectManagementPopup.EDIT_PROJECT, 
+					this.project  ) )   */
+				this.dispatchEvent( new CustomEvent(DateXMLEditor.EDIT_DATE, 
+					this.dateXML  ) )   
+			}
+			
+			
+			protected function btnDelete_clickHandler(event:MouseEvent):void
+			{
+				/*
+				 this.dispatchEvent( new CustomEvent(ProjectManagementPopup.DELETE_PROJECT, 
+					this.project  ) )  
+				*/
+				this.dispatchEvent( new CustomEvent(DateXMLEditor.DELETE_DATE, 
+					this.dateXML  ) )   				
+			}			
+
+		]]> 
+	</fx:Script> 	
+	
+	<s:states> 
+		<s:State name="normal"/> 
+		<s:State name="hovered"/> 
+		<s:State name="disabled"/> 
+		<s:State name="selected" />
+	</s:states> 	
+	
+	<s:transitions>
+		<s:Transition toState="*" >
+			<s:AnimateColor targets="{[this.txtLbl]}"   duration="250" />
+		</s:Transition>
+		<s:Transition toState="*" >
+			<s:Fade targets="{[this.bg]}"   duration="250" />
+		</s:Transition>		
+	</s:transitions>	
+	
+	
+	<s:Rect id="bg" 
+			alpha="0" alpha.selected="1" alpha.hovered=".5"
+			top="0" right="0" bottom="0" left="0" >
+		<s:fill>
+			<s:SolidColor color="0xEDF6F7" />
+		</s:fill>
+	</s:Rect>
+<s:HGroup>
+	
+	<s:Label   id="txtLbl" verticalCenter="0" width="125"
+			   color.hovered="0x696969"  x="5"
+			   useHandCursor="true"  buttonMode="true"
+			   />		
+	
+<!--	<s:Label   id="txtDesc" verticalCenter="0" width="125"
+			   color.hovered="0x696969"  x="5"
+			   useHandCursor="true"  buttonMode="true"
+			   />		-->
+	<utils:IconButton label="edit"  id="btnEdit" click="btnEdit_clickHandler(event)"
+					  toolTip="Edit"
+					  iconSkin=".iconSettings"    />
+	<utils:IconButton label="delete"  id="btnDelete" click="btnDelete_clickHandler(event)"
+					  toolTip="Delete Person"
+					  iconSkin=".closeBtn"    />	
+	<!--	<s:Button label="Edit" click="btnEdit_clickHandler(event)" />-->
+</s:HGroup>
+</s:ItemRenderer>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"   width="100%"
+		 creationComplete="group1_creationCompleteHandler(event)"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"  >
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayList;
+			import mx.events.FlexEvent;
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				 
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:SolidColorStroke id="strokeColor" color="0xCACECF" />
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	 <s:layout>
+		 <s:HorizontalLayout  
+			 paddingTop="10" paddingLeft="10"    
+			 verticalAlign="bottom"/>
+	 </s:layout>
+	<s:Label text="MOST RECENT" fontWeight="bold" />
+	<s:Group id="arrowNo"  y="-15" width="40" height="39" 
+			 useHandCursor="true" buttonMode="true" 
+			  scaleY="0.5" scaleX="0.5"
+			  toolTip="This box points to the most recent value"
+			 >
+ 
+		<s:filters>
+			<s:GlowFilter color="0xF9C301" />
+			<s:DropShadowFilter id="dsfBg" alpha="0.5" blurX="0" 
+								blurY="0" distance="1" strength="1"   />
+			
+		</s:filters>
+		
+		<s:Path id="bgArrows"  
+				data="L 0 20 L 10 20 L 20 30 L 30 20 L 40 20 L 40 0 L 0 0 z">
+			<s:fill>
+				<s:LinearGradient rotation="90">
+					<s:GradientEntry color="0xF9C301"  alpha="1" />
+					<s:GradientEntry color="0xDB6400"  alpha="1" />
+				</s:LinearGradient>
+			</s:fill>
+			<s:stroke>
+				<s:SolidColorStroke color="#FFFFFF"  weight="2" />
+			</s:stroke>
+		</s:Path>			
+		 
+	</s:Group>
+	<s:Line height="25" stroke="{this.strokeColor}" />
+	<s:Label text="3 mo." fontWeight="bold" />
+	<s:Label text="trend" />
+	
+	<s:Group id="holderArrow" 
+			 useHandCursor="true" buttonMode="true" 
+			 toolTip="This arrow points in the direction of the six month trend"
+			 >
+		<s:Path id="arrowRight"   y="-15"
+				data="M 40 5 L 35 0 L 35 10 z M 35 4 L 0 4 L 0 6 L 35 6 z">
+			<s:fill>
+				<s:SolidColor color="0xDB6400" />
+			</s:fill>
+		</s:Path>			
+	</s:Group>
+
+	
+	<s:Line height="25" stroke="{this.strokeColor}" />
+	<s:Label text="Typical" fontWeight="bold" />
+	<s:Label text="range" />
+ 
+	
+		<s:Group id="typicalRange"  width="50" height="22"  
+				 useHandCursor="true" buttonMode="true"
+				 toolTip="This bar represents the typical range of values"
+				 >
+			<s:filters>
+				<!--<s:GlowFilter color="0x95B99B" />-->
+				<s:DropShadowFilter  alpha="0.5" blurX="0" 
+									 blurY="0" distance="1" strength="1"   />
+				
+			</s:filters>
+			<s:Rect id="scaleColor" left="0" right="0" top="0" bottom="0" >
+				<s:fill>
+					<s:LinearGradient rotation="90">
+						<s:GradientEntry color="0x748575"  alpha="1"  />
+						<s:GradientEntry color="0x95B99B"   ratio="1"  />
+					</s:LinearGradient>
+				</s:fill>
+				
+				
+			</s:Rect>
+ 
+		</s:Group>		
+	<s:Line height="25" stroke="{this.strokeColor}" />
+	<s:Label text="EXTREME" fontWeight="bold" />
+	<s:Label text="range" />
+	
+			<s:Group id="scaleBg"  
+					 useHandCursor="true" buttonMode="true"
+					 toolTip="This bar represents the extreme range of values"
+					 width="50" height="22">
+				
+				<s:Rect id="shadow" left="0" right="0" top="0" bottom="0" >
+					<s:fill>
+						<s:LinearGradient rotation="90">
+							<s:GradientEntry color="0xE9EDEE"  />
+							<s:GradientEntry color="0xF8F8FA"  />
+						</s:LinearGradient>
+					</s:fill>
+					<s:stroke>
+						<s:SolidColorStroke color="#CCCDCF" />
+					</s:stroke>
+				</s:Rect>
+				<s:filters>
+					<s:GlowFilter color="0xE9EDEE" />
+					<!--<s:DropShadowFilter  alpha="0.5" blurX="0" 
+					blurY="0" distance="1" strength="1"   />-->
+				</s:filters>				
+			</s:Group>	
+	
+	<s:Line height="25" stroke="{this.strokeColor}" />
+	<s:Button 
+		useHandCursor="true" buttonMode="true" 
+		label="Help" toolTip="Learn more about this application" />
+</s:Group>

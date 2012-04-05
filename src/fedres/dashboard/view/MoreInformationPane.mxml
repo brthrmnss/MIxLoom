@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"  color="#777777" 
+		 creationComplete="creationCompleteHandler(event)" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:utils="fedres.dashboard.view.utils.*"
+		 xmlns:view="fedres.dashboard.view.*">
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+ 
+			public var creationComplete : Boolean = false; 
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				this.creationComplete = true; 
+			}
+			
+			
+			[Bindable] public var indicator  : IndicatorVO = new IndicatorVO()
+			public function set data(value:Object):void { 
+				if (value== null)  return; 
+				this.indicator = value as IndicatorVO
+				this.modifyRenderer() 
+			}
+			[Bindable] public var txtInfo : String = 'This is x'; 
+			public function modifyRenderer() : void
+			{
+				this.txtInfo = this.indicator.whatIsIt
+			}
+	 
+		]]>
+	</fx:Script>
+ 
+	
+	<s:states> 
+		<s:State name="normal"/> 
+		<s:State name="hide"/> 
+	</s:states> 	
+	
+	<s:transitions>
+		<s:Transition>
+			<s:Parallel>
+				<s:Fade targets="{[this.txtMoreInfo]}"/>
+				<s:Resize  targets="{[this]}" />
+			</s:Parallel>
+			
+		</s:Transition>
+	</s:transitions>
+	 
+		<s:Label id="txtMoreInfo" text="{txtInfo}"
+				  width="100%"
+				 includeIn="hide" color="0x979797"/>
+	 
+	
+</s:Group>

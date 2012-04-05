@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popup:PopupBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:comps="org.syncon.comps.*" 
+					  creationComplete="onInit()" 
+					  implements="org.syncon.popups.view.IPopup"
+					  xmlns:popup="fedres.dashboard.view.popup.*" xmlns:utils="fedres.dashboard.view.utils.*" xmlns:view="fedres.dashboard.view.*"					  
+					  >
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			
+			import org.syncon.popups.view.IPopup;
+			
+			import sss.Shelpers.Shelpers.ui.PopupCode;
+			
+			public var completeFx : Function; 
+			
+			static public var ADD_RANGE : String = 'addRange'
+	 		static public var SORT_RANGES :  String = 'sortRange' 
+			static public var DELETE_RANGE :  String = 'deleteRange' 
+				
+			override public function onInit() : void 
+			{
+				this.creationComplete = true; 
+				this.popupCode.center()
+			}
+			
+			override public  function create(app:Object)  : IPopup
+			{
+				var popup:  EditSeriesPopup = new EditSeriesPopup()
+				popup.popupCode = PopupCode.Create( popup, app ) 
+				return popup			
+			} 
+			
+			override public function show(  )  : void
+			{
+				this.popupCode.open( false,true ) 
+				
+			}
+ 
+			public var indicator : IndicatorVO; 
+			
+ 			public function open( indicator_: IndicatorVO, completeFx : Function = null )  : void
+			{
+				this.popupCode.open( false, true ) 
+				this.indicator = indicator_; 
+
+				this.dispatchEvent( new CustomEvent( 'openedPopup' ) ); 
+			}  
+			
+			 /**
+			 * Export move data from ui to data object
+			 * */
+			
+			override public function hide( ) : void
+			{
+				this.popupCode.close() 
+				this.dispatchEvent( new CustomEvent( 'closedPopup' ) ); 
+			}
+
+			protected function btnClose_clickHandler(event:MouseEvent):void
+			{
+				this.hide()
+			}
+
+
+			protected function btnAdd_clickHandler(event:MouseEvent):void
+			{
+				
+				this.dispatchEvent( new CustomEvent( ADD_RANGE ) ) 				
+			}
+			
+			
+			protected function btnSort_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( SORT_RANGES ) ) 				
+			}
+						
+			
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	<popup:PopupBg />
+	
+ 	<s:VGroup paddingTop="10" paddingBottom="20" paddingRight="10" paddingLeft="10" >
+	 
+<!--
+	 <popup:PopupHeader    label="Historical Data"  id="header" padding="0"  width="100%"/>
+	 -->
+	<!-- <s:Label text="Edit Indicator" fontSize="24" fontWeight="bold" />-->
+		<popup:PopupHeader    label="Edit Indicator"  id="header" padding="0"  width="100%"/>
+	 <s:Label text="Market Indicator" visible="false" />
+	  
+	 <mx:Form labelWidth="100" >
+		 <mx:FormItem label="Name" >
+			 <s:TextInput id="txtName"   width="250" />
+		 </mx:FormItem>
+		 <mx:FormItem label="Name of Board" >
+			 <s:TextInput id="txtBoard"  width="250" />
+		 </mx:FormItem>
+		 <mx:FormItem label="Description" >
+			 <s:TextArea  heightInLines="4" width="250" id="txtDesc" />
+		 </mx:FormItem>		 
+	 </mx:Form>
+	  
+		<s:HGroup>
+			
+		
+	 <s:Label text="Ranges" />
+		<s:Button label="Add" id="btnAdd" click="btnAdd_clickHandler(event)" />
+			<!--<s:Button label="Sort" id="btnSort" click="btnSort_clickHandler(event)" />-->
+		</s:HGroup>
+		
+	 <s:Label  text="options" />
+	 <s:HGroup  verticalAlign="middle" horizontalAlign="left">
+		 
+	 	<mx:Spacer width="20" />
+		 <s:Label text="Preview:" fontWeight="bold" />
+		<s:Group id="scaleHolder">
+			<s:Group id="scaleBg" width="200" height="25" >
+				<s:Rect top="-1" right="-1" bottom="-1" left="-1" >
+					<s:stroke>
+						<s:SolidColorStroke color="0" />
+					</s:stroke>
+				</s:Rect>
+			</s:Group>
+			<s:Group id="scale" width="200" height="25" >
+			</s:Group>			
+		</s:Group>
+	 </s:HGroup>
+		
+		<mx:Spacer height="20" />
+		
+		<s:HGroup>
+			<mx:Spacer width="20" />
+			<s:Label text="Name" width="150" />
+			<s:Label text="Description" width="150" />
+			<s:Label text="lo" width="60" />
+			<s:Label text="hi" width="60" />		
+			<s:Label text="scale"  width="200" />
+		</s:HGroup>
+	 <s:List id="list" itemRenderer="fedres.dashboard.view.popup.range_edit_renderer"  
+			 width="100%" borderVisible="false"   
+			 height="300" >
+		 <s:layout>
+			 <s:VerticalLayout gap="10"         />
+		 </s:layout> 
+		 
+	 </s:List>
+	 
+ </s:VGroup>  
+ 
+		<utils:IconButton  label="X"  iconSkin=".closeBtn" click="btnClose_clickHandler(event)" 
+						   right="5" top="10" />
+ 
+</popup:PopupBase>

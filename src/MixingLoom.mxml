@@ -1,0 +1,298 @@
+<?xml version="1.0"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"  
+			   addedToStage="application1_addedToStageHandler(event)"
+			   applicationComplete="application1_applicationCompleteHandler(event)"
+			   preloader="preloader.DropFunctionsPatcherPreloader"
+			   xmlns:views="views.*" xmlns:dashboard="fedres.dashboard.*">
+	
+	<fx:Script>
+		
+		<![CDATA[
+			import blah.Foo;
+			import blah.Foo2;
+			//  preloader="preloader.DropFunctionsPatcherPreloader"
+			import fedres.dashboard.EconomyDashboardContext;
+			
+			import mx.events.FlexEvent;
+			
+			import org.mixingloom.patcher.MigrateFunctionsPatcher;
+			import org.mixingloom.patcher.MigrateFunctionsPatcher4_infoOpened;
+			import org.mixingloom.patcher.MigrateFunctionsPatcher_Final;
+			private var p:LoadSwc;
+			private var testFoo:Foo;
+			protected function application1_applicationCompleteHandler(event:FlexEvent):void
+			{
+				if ( MigrateFunctionsPatcher_Final.PostProcessFx != null ) 
+				{
+					MigrateFunctionsPatcher_Final.PostProcessFx()
+				}
+				//this.application1_applicationCompleteHandler( new Proxy() ) ; //that would be too easy 
+				try
+				{
+					var clazz:Class = ApplicationDomain.currentDomain.getDefinition("com.classes.generated.RuntimeClass") as Class;
+					var instance:Object = new clazz();
+					var i:int = instance.multiplyByHundred(10);
+				} 
+				catch(error:Error) 
+				{
+					trace('err1')					
+				}
+				
+				this.testFoo = new Foo(); 
+				onTest()
+				/* 
+				var c : ClassToPrototype = new ClassToPrototype()
+				c.convertIntro( MigrateFunctionsPatcher4_infoOpened.dictClass ) ;
+				*/
+				//TODO:test changing variable names ... does it fail? ...also test complex math how is constantpool 
+				//not being used? 
+				try
+				{
+					var str : String = this.testFoo.getBar2(); 
+				} 
+				catch(error:Error) 
+				{
+					trace('getBar2 failed')					
+				}
+				
+				p = new LoadSwc()
+				p.setupActivate( this ) ; 
+				
+				
+				
+				this.testFoo.fxFunc(); 
+				
+				this.setupContext()
+				return;
+				
+				var proto : Object = Foo.prototype
+				//test for class meth to prototype meth conversion 
+				var fx : Function = this.testFoo['xxxtarget_'+'getPrivateBar' ]
+				this.p.getVariables(  Foo )
+				//this.p.getVariables(  proto )
+				//fx(); 
+				var f2 : Foo2 = new Foo2()
+				Foo2.prototype.testProtoFx = fx
+				f2.testProtoFx()
+				//i didn' realize i could take any function and use the [''] to get it to the prototype .. doesn't help though 
+				Foo2.prototype.testProtoFx2 = this.testFoo['getPrivateBar' ]
+				f2.testProtoFx2()
+				return; 
+				
+				
+				try
+				{
+					this.testFoo.pubMeth(); 
+				} 
+				catch(error:Error) 
+				{
+					trace('err1')					
+				}
+				try
+				{
+					this.testFoo['pubMethvvv'](); 
+				} 
+				catch(error:Error) 
+				{
+					trace('err2')
+				}
+				
+				
+				//
+				/* try { */
+				/* Foo.prototype.getPrivateBar = function () : Object
+				{
+				return this['inject_getPrivateBar']();
+				} */
+				var dict : Dictionary = MigrateFunctionsPatcher.dictClass
+				
+				for ( var name : String in dict ) 
+				{
+					var classObject: Object = getDefinitionByName(name)
+					var props : Array = dict[name]
+					var newObj : Object = new classObject(); 
+					/* var 	xml : XML = describeType(classObject);
+					var list : XMLList = xml..variable
+					var variables : Array = [] ;
+					for each ( var i : Object in list ) 
+					{
+					var ooo : Object = i.@name.toString()
+					variables.push(ooo)
+					} */
+					var variables : Array = this.p.getVariables(classObject)
+					classObject.prototype.variables = variables
+					for each ( var prop : String in props ) 
+					{
+						var propRenamed : String = 'inject_'+prop 
+						classObject.prototype
+						trace(newObj[propRenamed], prop, propRenamed)
+						//continue; 
+						//if ( newObj['inject_'+fxName] == sdf)
+						//setter getters
+						
+						if ( variables.indexOf( propRenamed ) != -1 ) 
+						{
+							//say not to properties to prevent collisions?
+							/* classObject.prototype[prop+'='] = function(i:int):void
+							{
+							trace('hit tracer2'); 
+							this['inject_'+prop] = 1
+							}
+							classObject.prototype['set '+prop] = function(i:int):void
+							{
+							trace('hit tracer'); 
+							this['inject_'+prop] = 1
+							} */
+							//set it to the old place since i couldn't prevent Patcher from injecting the variables /// from doign that ...
+							classObject.prototype[prop] = classObject.prototype[propRenamed] 
+							continue;
+						}
+						//methods
+						/* var fxMethod : Function = function (...args):Object
+						{
+						return this[propRenamed].apply(this, args)
+						}
+						classObject.prototype[prop] = fxMethod */
+						/* 
+						var fxMethod : Function = function (...args):Object
+						{
+						return this[propRenamed].apply(this, args)
+						}
+						classObject.prototype[prop] = fxMethod 
+						*/
+						this.addFx( classObject.prototype, prop, propRenamed ) 
+					}
+				}
+				//propRenamed='dfsdf'
+				newObj = new classObject(); 
+				var fx : Function;  
+				newObj.xF =  's' //actually we are prorotyping ... this s hould be nothing ...
+				/**
+				 * would ike to be able to change variables in files 
+				 * but i couldn' teasily copy the other values 
+				 * unless i could create a prototype that would go through all props on object and copy their inject over
+				 * i'd hate to do that 
+				 * 
+				 * dynamic is annoying in flex to have on classes, so have it be added, will have to wait till 
+				 * i understand intropsection better
+				 * 
+				 * */
+				/*  newObj['xF='] =  5
+				newObj['set xF'] =  5
+				Foo.prototype.getPrivateBar 
+				var dropped : Array = ['getPrivateBar'] ; 
+				var className : String = "blah:Foo".replace(":", '.' )
+				var o : Object = getDefinitionByName(className)
+				//basic example 
+				for each ( var fxName : String in dropped ) 
+				{
+				o.prototype[fxName] = function (...args):Object
+				{
+				return this['inject_'+fxName].apply(this, args)
+				}
+				} */
+				/* 
+				//registerClassAlias( "com.rozengain.cloning.MyClass", MyClass );
+				var bytes : ByteArray = new ByteArray();
+				bytes.writeObject( Foo );
+				bytes.position = 0;
+				var cl : Object = bytes.readObject() //as Class; //MyClass;	
+				//	use AS3;
+				trace(cl, cl.prototype, Foo.prototype.getPrivateBar , Foo.prototype, Foo.prototype.getPrivateBar )
+				trace( Foo.prototype.inject_getPrivateBar) */
+				var foo:Foo = new Foo();
+				l.text = foo['getPrivateBar']();
+				l.text = foo['getBar']();
+				l.text = foo['getPrivateBar2']('d');
+				l.text = foo['getPrivateBar']();					
+				this.testFoo = foo;
+				/**
+				 * 
+				 compc -source-path . G:\My Documents\work\flex4\test\MixingLoom_Mine\src\ -output G:\My Documents\work\flex4\test\MixingLoom_Mine\swcs\test2.swc -include-classes blah.Foo -debug=true
+				 * */
+				
+				//l.text = foo['inject_getPrivateBar']();
+				/* 	} catch (error:Error) {
+				l.text = error.message;
+				} */
+			}
+			/**
+			 * recreate context so we can get new propRenamed vars each time 
+			 * */
+			public function addFx( proto : Object, prop : String, propRenamed : String ) : void
+			{
+				propRenamed = propRenamed.toString()
+				var fxMethod : Function = function (...args):Object
+				{
+					return this[propRenamed.toString()].apply(this, args)
+				}
+				proto[prop] = fxMethod
+				fxMethod = null; 
+			}
+			
+			protected function onLoadSwc(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+				p.loadSwc ('swcs/test2.swc')
+				p.fxReturnedClasses = this.importedClasses
+				
+				
+			}
+			
+			private function importedClasses(classList:String ):void
+			{
+				// TODO Auto Generated method stub
+				
+			}
+			
+			
+			protected function onTest(event:MouseEvent=null):void
+			{
+				l.text = this.testFoo['getPrivateBar']();		
+				
+				/* trace('test'); 
+				try
+				{
+				this.testFoo['boo']();	
+				} 
+				catch(error:Error) 
+				{
+				'no boo'
+				} */
+			}
+			
+			protected function application1_addedToStageHandler(event:Event):void
+			{
+				/* var c  : EconomyDashboardContext = new EconomyDashboardContext(); 
+				c.contextView = this;  */
+			}
+			
+			private function setupContext():void
+			{
+				
+				var c  : EconomyDashboardContext = new EconomyDashboardContext(); 
+				c.contextView = this;   
+				c.mapView(viewer.testdViewer); 
+			}
+			
+		]]>
+		
+	</fx:Script>
+	<s:VGroup>
+		<s:Button label="s" click="onLoadSwc(event)"/>
+		<s:Label id="l"/>
+		<s:Button label="Reload" click="this.p.loadUpdatedSwf()"/>
+		<s:Button label="Test" click="onTest(event)" />
+		
+		<views:TestView id="viewer" />
+	</s:VGroup>
+	
+	<fx:Declarations>
+		<!--
+		<dashboard:EconomyDashboardContext   id="context" contextView="{this}" />
+		-->
+	</fx:Declarations>
+	
+</s:Application>

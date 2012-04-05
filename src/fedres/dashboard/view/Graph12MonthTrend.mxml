@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"  color="#777777" 
+		 creationComplete="creationCompleteHandler(event)" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%">
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			[Bindable]
+			private var expensesAC: ArrayCollection = new ArrayCollection( [
+				{ date: "Jan", value: 2000, Expenses: 1500, Amount: 450 },
+				{ date: "Feb", value: 1000, Expenses: 200, Amount: 600 },
+				{ date: "Mar", value: 1500, Expenses: 500, Amount: 300 },
+				{ date: "Apr", value: 1800, Expenses: 1200, Amount: 900 },
+				{ date: "May", value: 2400, Expenses: 575, Amount: 500 } ]);
+			
+			public var creationComplete : Boolean = false; 
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				this.creationComplete = true; 
+				this.modifyRenderer()
+			}
+			
+			
+			[Bindable] public var indicator  : IndicatorVO = new IndicatorVO()
+			 public function set data(value:Object):void { 
+				if (value== null)  return; 
+				
+				this.indicator = value as IndicatorVO
+ 
+				this.modifyRenderer() 
+			}
+						
+			
+			private function modifyRenderer(e: Event=null) : void
+			{
+				if ( this.creationComplete == false  ) 
+					return; 
+		 
+				this.expensesAC.disableAutoUpdate();
+				this.expensesAC.removeAll()
+				for each ( var o : ObservationVO in this.indicator.lastYears ) 
+				{
+					expensesAC.addItem( o )
+				}
+				this.expensesAC.enableAutoUpdate()
+			} 		
+			
+
+			protected function linkHistorical_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent( 'historicalData', this.indicator ) ) ; 
+			}
+
+			private function formatDate(value:Date,previousValue:Date,axis:DateTimeAxis):String {               
+				var dateLabel:String = df.format(value);
+				//if ( value.month ==0 ) 
+				//	dateLabel += '
+				return dateLabel.charAt(0);
+			}
+
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:SolidColorStroke id = "s1" color="0x5CB0EE" weight="4"/>
+		<mx:DateFormatter id="df" formatString="MMM"/>
+	</fx:Declarations>
+	
+	<s:states> 
+		<s:State name="normal"/> 
+		<s:State name="hovered"/> 
+		<s:State name="disabled"/> 
+		<s:State name="selected" />
+	</s:states> 	
+	
+	
+	
+ 
+		<!-- paddingLeft="5" paddingRight="5"  -->
+		<mx:LineChart id="myChart4" width="140"  height="160" 
+					
+					   seriesFilters="{[]}"
+					  showDataTips="true" dataProvider="{expensesAC}">
+			<mx:backgroundElements>
+				<mx:GridLines 
+					horizontalChangeCount="1" 
+					verticalChangeCount="1"
+					>
+					<mx:horizontalStroke>
+						<s:SolidColorStroke color="0xFFFFFF" alpha="0.0"  weight="1"/>
+					</mx:horizontalStroke>
+					<mx:verticalStroke>
+						<mx:SolidColorStroke weight="1"/>
+					</mx:verticalStroke>
+				</mx:GridLines>
+			</mx:backgroundElements>
+		
+			<mx:horizontalAxis>
+				<mx:DateTimeAxis  id="a11s"    dataUnits="months"  labelFunction="{formatDate}"   />
+				<!--<mx:CategoryAxis  id="a11s"    categoryField="date"/>-->
+			</mx:horizontalAxis>
+		 <!--	<mx:horizontalAxisRenderers>
+				
+				<mx:AxisRenderer   canDropLabels="false" 
+								   axis="{a11s}" tickLength="8"    fontSize="14"
+								    showLabels="true" showLine="true"  >
+				
+ 
+				</mx:AxisRenderer>
+				
+			</mx:horizontalAxisRenderers>	-->	 
+			<mx:verticalAxis>
+				<mx:LinearAxis  id="a11"  padding="5" baseAtZero="false"   
+							/>
+			</mx:verticalAxis>				
+	
+			<mx:verticalAxisRenderers>
+				<mx:AxisRenderer   labelGap="0" width="0"
+								   canDropLabels="true"    fontSize="14"
+								   axis="{a11}" tickLength="0"   
+								    showLabels="false"
+								   showLine="false"
+								   />
+			</mx:verticalAxisRenderers>
+			<mx:series>
+				<mx:LineSeries yField="value"  xField="date" form="segment" displayName="Value" lineStroke="{s1}"/>
+			</mx:series>
+		</mx:LineChart>
+ 
+</s:Group>

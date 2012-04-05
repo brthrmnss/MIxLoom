@@ -1,0 +1,234 @@
+ 
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+/*@font-face {
+	src: url("fonts/REZB____.TTF");
+	src: url("fonts/AlteHaasGroteskBold.ttf");	
+	
+	fontFamily: "ACaslonProRegularEmbedded";
+	
+	embedAsCFF: true;
+}
+@font-face {
+	src: url("fonts/REZB____.TTF");
+	src: url("fonts/AlteHaasGroteskBold.ttf");	
+	
+	fontFamily: "ACaslonProRegularEmbedded";
+	
+	embedAsCFF: true;
+}
+
+@font-face {
+	src: url("fonts/REZB____.TTF");
+	src: url("fonts/AlteHaasGroteskBold.ttf");	
+	
+	fontFamily: "ACaslonProRegularEmbedded2";
+
+	embedAsCFF: false;
+}
+
+@font-face {
+	src: url("fonts/REZB____.TTF");
+	src: url("fonts/AlteHaasGroteskBold.ttf");	
+	
+	fontFamily: "ACaslonProRegularEmbedded2";
+	
+	embedAsCFF: false;
+}*/
+ 
+ 
+@font-face {
+	src: url("fonts/Helvetica.ttf");	
+	fontFamily: "ACaslonProRegularEmbedded";
+	embedAsCFF: true;
+}
+@font-face {
+	src: url("fonts/Helvetica Bold.ttf");	
+	fontWeight: bold; 
+	fontFamily: "ACaslonProRegularEmbedded";
+	embedAsCFF: true;
+}
+@font-face {
+	src: url("fonts/Helvetica Oblique.ttf");	
+	fontStyle: italic; 
+	fontFamily: "ACaslonProRegularEmbedded";
+	embedAsCFF: true;
+}
+@font-face {
+	src: url("fonts/Helvetica.ttf");	
+	fontFamily: "ACaslonProRegularEmbedded2";
+	embedAsCFF: false;
+}
+@font-face {
+	src: url("fonts/Helvetica Bold.ttf");	
+	fontWeight: bold; 
+	fontFamily: "ACaslonProRegularEmbedded2";
+	embedAsCFF: false;
+}
+@font-face {
+	src: url("fonts/Helvetica Oblique.ttf");	
+	fontStyle: italic; 
+	fontFamily: "ACaslonProRegularEmbedded2";
+	embedAsCFF: false;
+}
+
+ 
+s|global {
+	font-family: ACaslonProRegularEmbedded;
+ fontLookup: embeddedCFF; 
+} 
+ 
+
+mx|AxisRenderer,
+mx|Label,
+mx|ToolTip,
+mx|ColumnSeries,
+mx|TextInput,
+mx|TextArea,
+mx|DateField
+{
+	font-family: ACaslonProRegularEmbedded2; 
+}
+
+
+s|Button {
+	useHandCursor: true;
+	buttonMode: true; 
+/*	font-weight: bold;*/
+} 
+
+
+ 
+
+.iconTrash
+{
+	content:     Embed( source="icons/16/trash.png" );
+}
+ 
+
+.iconInfo
+{
+	content:     Embed( source="icons/16/info.png" );
+}
+
+.iconSettings
+{
+	content:     Embed( source="icons/16/tools.png" );
+}
+
+.closeBtn
+{
+	content:     Embed( source="icons/16/delete.png" );
+}
+
+.btnUp
+{
+	content:     Embed( source="icons/16/arrow_up.png" );
+}
+
+.btnDown
+{
+	content:     Embed( source="icons/16/arrow_down.png" );
+}
+
+.btnRight
+{
+	content:     Embed( source="icons/16/arrow_right.png" );
+}
+
+.btnLeft
+{
+	content:     Embed( source="icons/16/arrow_left.png" );
+}
+
+.imgUserNotFound
+{
+	content:     Embed( source="icons/32/user.png" );
+}
+
+
+.btnAdd
+{
+	content:     Embed( source="icons/16/add.png" );
+}
+.btnRefresh
+{
+	content:     Embed( source="icons/16/refresh.png" );
+}
+
+.btnEmail
+{
+	content:     Embed( source="icons/16/mail.png" );
+}
+.btnTwitter
+{
+	content:     Embed( source="icons/16/comment.png" );
+}
+.btnPhone
+{
+	content:     Embed( source="icons/16/phone.png" );
+}
+.btnSearch
+{
+	content:     Embed( source="icons/16/search.png" );
+}
+
+
+
+.btnAddGraph
+{
+	content:     Embed( source="icons/16/chart.png" );
+}
+.btnAddPane
+{
+	content:     Embed( source="icons/16/games.png" );
+}
+.btnAddTwitter
+{
+	content:     Embed( source="icons/16/comments.png" );
+}
+.btnAddSpacer
+{
+	content:     Embed( source="icons/16/minus.png" );
+}
+.btnAddProjectList
+{
+	content:     Embed( source="icons/16/page.png" );
+}
+.btnAddAlert
+{
+	content:     Embed( source="icons/16/comment.png" );
+}
+.btnAddRow
+{
+	content:     Embed( source="icons/16/minus.png" );
+}
+
+
+.btnSettings
+{
+	content:     Embed( source="icons/16/process.png" );
+}
+
+.btnForbiddenSmall
+{
+	content:     Embed( source="icons/16/forbidden_sign.png" );
+}
+
+.btnTest
+{
+	content:     Embed( source="icons/16/link.png" );
+}
+
+.btnTextEditor
+{
+	content:     Embed( source="icons/16/paint_brush.png" );
+}
+.btnHelp
+{
+	content:     Embed( source="icons/16/help.png" );
+}
+
+
+

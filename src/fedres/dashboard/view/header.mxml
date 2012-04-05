@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark"   width="100%"
+		 creationComplete="group1_creationCompleteHandler(event)"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:dashboard="dashboard.*" xmlns:view="fedres.dashboard.view.*"  >
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				 
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:VGroup x="10" width="{this.width-this.img.width-20-10}" >
+		<s:Label   width="100%"
+				 text="To help you understand the economy, we've identified a few key economic and market indicators to help assess the current economic health and trend."
+				 />
+		<view:legend />
+	</s:VGroup>
+
+	<mx:Image 
+		useHandCursor="true" buttonMode="true"  toolTip="Learn more about regulatory reform"
+		id="img" source="homepage_regreform_icon.jpg"  right="10" />
+ 
+</s:Group>

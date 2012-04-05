@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Button xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"  
+		  useHandCursor="true" buttonMode="true"
+		  skinClass="fedres.dashboard.view.utils.ButtonSkin"
+		 creationComplete="onInit()" 
+		 xmlns:view="org.syncon.evernote.panic.view.*"
+		 >
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.view.assets.Icons;
+			
+			public var creationComplete : Boolean = false; 
+			
+			protected function onInit():void
+			{
+				this.creationComplete = true
+			}
+			public function set iconSkin ( s :   String ) : void
+			{
+				this.content= Icons.getFormatPainter( s ) 
+				this.invalidateDisplayList();
+			}
+		]]>
+	</fx:Script>
+	
+	 
+</s:Button>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popup:PopupBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:comps="org.syncon.comps.*" 
+					  creationComplete="onInit()" 
+					  implements="org.syncon.popups.view.IPopup"
+					  xmlns:popup="org.syncon.evernote.basic.view.popup.*" xmlns:editors="org.syncon.evernote.panic.view.popup.editors.*" xmlns:utils="org.syncon.evernote.panic.view.utils.*" xmlns:view="org.syncon.evernote.panic.view.*"					  
+					  >
+
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayList;
+			
+			import org.syncon.evernote.basic.model.CustomEvent;
+			import org.syncon.evernote.panic.controller.WidgetEvent;
+			import org.syncon.evernote.panic.vo.PersonVO;
+			import org.syncon.evernote.panic.vo.ProjectVO;
+			import org.syncon.popups.view.IPopup;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			import sss.Shelpers.Shelpers.ui.PopupCode;
+			
+			public var completeFx : Function; 
+			public var person : PersonVO = new PersonVO(); 
+			
+			override public function onInit() : void 
+			{
+				this.creationComplete = true; 
+				this.popupCode.center()
+			}
+			
+			override public  function create(app:Object)  : IPopup
+			{
+				var popup:   PopupInvite = new PopupInvite()
+				popup.popupCode = PopupCode.Create( popup, app ) 
+				return popup			
+			} 
+			
+			override public function show(  )  : void
+			{
+				this.popupCode.open( false,true ) 
+				this.dispatchEvent( new CustomEvent( 'openedPopup' ) ); 
+			}
+ 
+	/* 		public function open( person :  PersonVO, completeFx : Function = null )  : void
+			{
+				this.popupCode.open( false, true ) 
+ 
+				
+			} */
+			
+			 /**
+			 * Export move data from ui to data object
+			 * */
+			
+			override public function hide( ) : void
+			{
+				this.popupCode.close() 
+			}
+
+			protected function btnClose_clickHandler(event:MouseEvent):void
+			{
+				this.hide()
+			}
+ 
+ 
+
+		]]>
+	</fx:Script>
+
+	<editors:PopupBg />
+	
+ <s:VGroup paddingTop="10" paddingBottom="20" paddingRight="10" paddingLeft="10" >
+	 
+
+	 <popup:PopupHeader  bold="false"   label="Invite"  id="header" padding="0"  width="100%"/>
+	 
+	 <!--
+	 <s:Label id="alertTxt" />-->
+	 <s:Label text="You can invite members of your team to:" />
+	 <s:TextArea editable="false" selectable="true" id="txtInput"  width="240" height="145"/>
+	 <s:Label  id="txtMsg2" maxDisplayedLines="3" width="230" />
+ </s:VGroup>  
+
+		<utils:IconButton  label="X"  iconSkin=".closeBtn" click="btnClose_clickHandler(event)" 
+						   right="5" top="10" />
+</popup:PopupBase>

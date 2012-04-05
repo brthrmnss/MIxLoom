@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popup:PopupBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:comps="org.syncon.comps.*" 
+					  creationComplete="onInit()" 
+					  implements="org.syncon.popups.view.IPopup"
+					  xmlns:popup="fedres.dashboard.view.popup.*" xmlns:utils="fedres.dashboard.view.utils.*" xmlns:view="fedres.dashboard.view.*"					  
+					  >
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			
+			import org.syncon.popups.view.IPopup;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			import sss.Shelpers.Shelpers.ui.PopupCode;
+			
+			public var fxComplete : Function; 
+			
+			static public var CLICKED_ADD : String = 'clickedAdd'
+			
+			override public function onInit() : void 
+			{
+				this.creationComplete = true; 
+				this.popupCode.center()
+			}
+			
+			override public  function create(app:Object)  : IPopup
+			{
+				var popup:   AddSeriesPopup = new AddSeriesPopup()
+				popup.popupCode = PopupCode.Create( popup, app ) 
+				return popup			
+			} 
+			
+			override public function show(  )  : void
+			{
+				this.popupCode.open( false,true ) 
+				this.dispatchEvent( new CustomEvent( 'openedPopup' ) ); 
+			}
+ 
+ 			public function open(  fxComplete_ : Function  )  : void
+			{
+				this.popupCode.open( false, true ) 
+				this.fxComplete = fxComplete_; 
+			}  
+			
+			 /**
+			 * Export move data from ui to data object
+			 * */
+			
+			override public function hide( ) : void
+			{
+				this.popupCode.close() 
+			}
+
+			public function set message ( s : String ) : void
+			{
+				if ( s == '' ) 
+					this.currentState = ''
+				else
+					this.currentState = 'message'
+				if ( this.txtMessage != null ) 
+					this.txtMessage.text = s ;
+			}
+			
+			protected function btnClose_clickHandler(event:MouseEvent):void
+			{
+				this.hide()
+			}
+
+
+			protected function btnAdd_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new  CustomEvent( CLICKED_ADD ) ) 
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+	</fx:Declarations>
+	<popup:states> 
+		<s:State name="normal"/> 
+		<s:State name="message"/> 
+	</popup:states> 	
+	
+	<popup:PopupBg />
+	
+ 	<s:VGroup paddingTop="10" paddingBottom="20" paddingRight="10" paddingLeft="10" >
+	 
+<!--
+	 <popup:PopupHeader    label="Historical Data"  id="header" padding="0"  width="100%"/>
+	 -->
+	 <s:Label text="Add Indicator" fontSize="24" fontWeight="bold" />
+	 <s:HGroup>
+		 
+	 </s:HGroup>
+		<s:Label text="FRED Series ID" visible="true" />
+	   <s:Label text="" id="txtMessage" fontWeight="bold" includeIn="message" />
+			 <s:TextInput id="txtFredId"   width="200" />
+		  
+	 <s:Button label="Add"  id="btnAdd" click="btnAdd_clickHandler(event)" />
+	 
+	 
+ </s:VGroup>  
+ 
+		<utils:IconButton  label="X"  iconSkin=".closeBtn" click="btnClose_clickHandler(event)" 
+						   right="5" top="10" />
+ 
+</popup:PopupBase>

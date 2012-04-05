@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark"   
+				 creationComplete="creationCompleteHandler(event)" 
+				 autoDrawBackground="false" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" xmlns:utils="fedres.dashboard.view.utils.*">
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			import fedres.dashboard.model.vo.ScaleRangeVO;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.events.SliderEvent;
+			
+			public var creationComplete : Boolean = false; 
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				this.creationComplete = true; 
+				this.modifyRenderer()
+			}
+			
+			
+			[Bindable] public var range  :  ScaleRangeVO = new ScaleRangeVO()
+			override public function set data(value:Object):void { 
+				super.data = value; 
+				if (value== null)  return; 
+				this.range = value as ScaleRangeVO
+				/* 
+				if ( dateXML != null ) 
+				this.dateXML.removeEventListener(ProjectVO.PROJECT_UPDATED, this.modifyRenderer )
+				this.dateXML = value as DateXMLVO
+				this.dateXML.addEventListener(ProjectVO.PROJECT_UPDATED, this.modifyRenderer, false, 0, true ) 		
+				*/
+				this.modifyRenderer() 
+			}
+			
+			
+			private function modifyRenderer(e: Event=null) : void
+			{
+				if ( this.creationComplete == false  ) 
+					return; 
+				
+				this.txtName.text = this.range.name.toString(); 
+				this.txtDesc.text = this.range.desc.toString(); 	
+				this.txtValue.value   = this.range.value
+				
+				this.txtHi.value = this.range.hi; 
+				this.txtLo.value = this.range.lo					
+					
+				this.slideValues.minimum = this.range.indicator.lo	
+				this.slideValues.maximum = this.range.indicator.hi			
+
+				this.slideValues.values = [ this.range.lo, this.range.hi ] 
+			
+				this.bgColor.color = this.range.color; 
+			} 		
+			
+ 
+			protected function btnDelete_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new CustomEvent(EditSeriesPopup.DELETE_RANGE, 
+					this.range  ) )   				
+			}	
+
+			protected function txtHi_changeHandler(event:Event):void
+			{
+				if ( this.txtHi.value < this.txtLo.value ) 
+					this.txtHi.value = this.txtLo.value; 
+				this.slideValues.values[1] = this.txtHi.value 
+				this.slideValues.invalidateDisplayList()
+				this.rangeChanged()
+			}
+
+
+			protected function slideValues_changeHandler(event:SliderEvent):void
+			{
+				this.txtHi.value = this.slideValues.values[1]
+				this.txtLo.value = this.slideValues.values[0]		
+				this.rangeChanged()
+			}
+
+
+			protected function txtLo_changeHandler(event:Event):void
+			{
+				if ( this.txtLo.value > this.txtHi.value ) 
+					this.txtHi.value = this.txtLo.value; 				
+				this.slideValues.values[0] = this.txtLo.value  
+				this.slideValues.invalidateDisplayList()
+				this.rangeChanged()
+			}
+
+			private function rangeChanged() : void
+			{
+				this.range.lo = this.txtLo.value
+				this.range.hi = this.txtHi.value; 
+				this.range.rangeChanged(); 
+			}
+				
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mx:SolidColorStroke id = "s1" color="0x5CB0EE" weight="2"/>
+	</fx:Declarations>
+	
+	
+	
+	
+	<s:states> 
+		<s:State name="normal"/> 
+		<s:State name="hovered"/> 
+		<s:State name="disabled"/> 
+		<s:State name="selected" />
+	</s:states> 	
+	
+	
+	<s:HGroup   verticalAlign="middle">
+		<s:Rect id="bg" 
+				 alpha.selected="1" alpha.hovered=".5"
+				 height="10"   width="10"    >
+			<s:fill>
+				<s:SolidColor id="bgColor" color="0xEDF6F7" />
+			</s:fill>
+		</s:Rect>
+
+		<s:TextInput id="txtName" text="" width="150" />
+		<s:TextInput id="txtDesc" text=""   width="150" />
+		<s:NumericStepper   id="txtLo" width="60"  
+							 change="txtLo_changeHandler(event)"
+							maximum="10000000" minimum="-100000000"
+							/>
+		<s:NumericStepper   id="txtHi" width="60"  
+							 change="txtHi_changeHandler(event)"
+							maximum="10000000" minimum="-100000000"
+							/>		
+		<mx:Slider id="slideValues" 
+				    change="slideValues_changeHandler(event)"
+				   thumbCount="2" width="200" />
+		<s:NumericStepper   id="txtValue" width="60"  maximum="10000000"
+						    minimum="-100000000"
+						   />
+	<!--	<s:TextInput id="txtHi" />
+		-->
+		<utils:IconButton label="delete"  id="btnDelete" click="btnDelete_clickHandler(event)"
+						  toolTip="Delete Range"
+						  iconSkin=".closeBtn"    />	
+	</s:HGroup>
+	
+</s:ItemRenderer>

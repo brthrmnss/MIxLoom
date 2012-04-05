@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:comps="org.syncon.comps.*" 
+					  width="100%" height="100%"
+					  creationComplete="onInit()" 
+					  >
+
+	<fx:Script>
+		<![CDATA[
+			public var creationComplete : Boolean = false; 
+						
+			public function onInit() : void 
+			{
+				this.creationComplete = true; 
+			}
+		]]>
+	</fx:Script>
+	<s:filters>
+		<s:DropShadowFilter
+			alpha="0.5" angle="45.0" blurX="4.0" blurY="4.0" color="0x000000" 
+			distance="2" hideObject="false" inner="false" knockout="false" quality="2" 
+			strength="1"/>
+	</s:filters>
+	
+	<s:Rect width="100%" height="100%"  >
+		<s:fill>
+			<s:SolidColor color="0xFFFFFF" />
+		</s:fill>	
+		<s:stroke>
+			<s:SolidColorStroke color="0"  pixelHinting="true"  weight="1"/>
+		</s:stroke>
+	</s:Rect>		
+	 
+</s:Group>

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popup:PopupBase xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  xmlns:comps="org.syncon.comps.*" 
+					  creationComplete="onInit()" 
+					  implements="org.syncon.popups.view.IPopup"
+					  xmlns:popup="fedres.dashboard.view.popup.*" xmlns:utils="fedres.dashboard.view.utils.*" xmlns:view="fedres.dashboard.view.*"					  
+					  >
+	<fx:Script>
+		<![CDATA[
+			import fedres.dashboard.controller.CustomEvent;
+			import fedres.dashboard.model.vo.IndicatorVO;
+			import fedres.dashboard.model.vo.ObservationVO;
+			import fedres.dashboard.view.utils.SearchOnEnter;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			
+			import org.syncon.popups.view.IPopup;
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			import sss.Shelpers.Shelpers.ui.PopupCode;
+			
+			public var fxComplete : Function; 
+			
+			[Bindable] public var dp : ArrayList = new ArrayList()
+			
+			static public var CLICKED_INDICATOR : String = 'clickedIndicator'
+			static public var CLICKED_SEARCH : String = 'clickedSearch'
+			
+			 public var searchOnEnter :   SearchOnEnter;
+				
+			override public function onInit() : void 
+			{
+				this.creationComplete = true; 
+				this.popupCode.center()
+				this.searchOnEnter = new SearchOnEnter( this.txtSearch, this.btnSearch_clickHandler, this.txtSearch ) 
+			}
+			
+			override public  function create(app:Object)  : IPopup
+			{
+				var popup:   SearchSeriesPopup = new SearchSeriesPopup()
+				popup.popupCode = PopupCode.Create( popup, app ) 
+				return popup			
+			} 
+			
+			override public function show(  )  : void
+			{
+				this.popupCode.open( false,true ) 
+				this.dispatchEvent( new CustomEvent( 'openedPopup' ) ); 
+			}
+ 
+ 			public function open(  fxComplete_ : Function  )  : void
+			{
+				this.popupCode.open( false, true ) 
+				this.fxComplete = fxComplete_; 
+				this.dispatchEvent( new CustomEvent( 'openedPopup' ) ); 
+			}  
+			
+			 /**
+			 * Export move data from ui to data object
+			 * */
+			
+			override public function hide( ) : void
+			{
+				this.popupCode.close() 
+			}
+
+			protected function btnClose_clickHandler(event:MouseEvent):void
+			{
+				this.hide()
+			}
+
+
+			protected function btnAdd_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent( new  CustomEvent( CLICKED_INDICATOR ) ) 
+			}
+
+
+			protected function btnSearch_clickHandler(event:MouseEvent=null):void
+			{
+				this.dispatchEvent( new  CustomEvent( CLICKED_SEARCH ) ) 
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+	</fx:Declarations>
+	
+	<popup:PopupBg />
+	
+ 	<s:VGroup paddingTop="10" paddingBottom="20" paddingRight="10" paddingLeft="10" >
+	 
+ 
+	 <popup:PopupHeader    label="Search Indicators"  id="header" padding="0"  width="100%"/>
+ <!--
+	 <s:Label text="Search Indicators" fontSize="24" fontWeight="bold" />
+		<utils:HDividerLine width="100%"   />-->
+		<s:HGroup>
+		 
+	 </s:HGroup>
+		<s:Label  id="lblMessage" text="" visible="true" />
+	   
+		<s:HGroup>
+			<s:TextInput id="txtSearch"   width="200" />
+			<s:Button label="Search"   useHandCursor="true" buttonMode="true"
+					   toolTip="Search"
+					  id="btnSearch" click="btnSearch_clickHandler(event)" />
+		</s:HGroup>
+			 
+		  
+	 <!--<s:Button label="Add"  id="btnAdd" click="btnAdd_clickHandler(event)" />-->
+	 <mx:Spacer height="10" />
+		<s:List id="list" itemRenderer="fedres.dashboard.view.popup.search_series_renderer"  
+				width="500" borderVisible="false"    dataProvider="{this.dp}"
+				 
+				height="300" >
+			<s:layout>
+				<s:VerticalLayout gap="10"               />
+			</s:layout> 
+			<s:scroller>
+				<s:Scroller horizontalScrollPolicy="off"  />
+			</s:scroller>
+			
+		</s:List>
+		
+ </s:VGroup>  
+ 
+	
+		<s:Label id="lblNoResultsFound" text=" " x="10" y="60" />
+		<utils:IconButton  label="X"  iconSkin=".closeBtn" click="btnClose_clickHandler(event)" 
+						   right="5" top="10" />
+ 
+</popup:PopupBase>
